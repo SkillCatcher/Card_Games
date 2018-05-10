@@ -24,3 +24,12 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+
+/.idea/compiler.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/sonarIssues.xml
+/.idea/workspace.xml
+/Card_Games.iml
+/.idea/libraries/Maven__junit_junit_4_12.xml
+/.idea/libraries/Maven__org_hamcrest_hamcrest_core_1_3.xml

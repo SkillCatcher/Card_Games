@@ -40,30 +40,43 @@ public class Card {
         switch(i/4) {
             case 0:
                 number = CardNumber.TWO;
+                break;
             case 1:
                 number = CardNumber.THREE;
+                break;
             case 2:
                 number = CardNumber.FOUR;
+                break;
             case 3:
                 number = CardNumber.FIVE;
+                break;
             case 4:
                 number = CardNumber.SIX;
+                break;
             case 5:
                 number = CardNumber.SEVEN;
+                break;
             case 6:
                 number = CardNumber.EIGHT;
+                break;
             case 7:
                 number = CardNumber.NINE;
+                break;
             case 8:
                 number = CardNumber.TEN;
+                break;
             case 9:
                 number = CardNumber.JACK;
+                break;
             case 10:
                 number = CardNumber.QUEEN;
+                break;
             case 11:
                 number = CardNumber.KING;
+                break;
             case 12:
                 number = CardNumber.ACE;
+                break;
             default:
                 System.out.println("Error");
         }
@@ -73,12 +86,16 @@ public class Card {
         switch (i%4) {
             case 0:
                 colour = CardColour.CLUBS;
+                break;
             case 1:
                 colour = CardColour.DIAMONDS;
+                break;
             case 2:
                 colour = CardColour.HEARTS;
+                break;
             case 3:
                 colour = CardColour.SPADES;
+                break;
             default:
                 System.out.println("Error");
         }

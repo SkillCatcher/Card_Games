@@ -1,11 +1,7 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.Card;
 import pl.skillcatcher.cards.Deck;
 import pl.skillcatcher.cards.Hand;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class BlackJack {
@@ -15,15 +11,7 @@ public class BlackJack {
         Hand playerHand = new Hand();
         Hand dealerHand = new Hand();
 
-        for (int i = 0; i < 52; i++) {
-            if(i < 36) {
-                cardDeck.getCards().get(i).setValue((i/4)+2);
-            } else if (i < 48) {
-                cardDeck.getCards().get(i).setValue(10);
-            } else {
-                cardDeck.getCards().get(i).setValue(11);
-            }
-        }
+        setBlackJackCardValues(cardDeck);
 
         cardDeck.shuffle();
         cardDeck.dealACard(dealerHand);
@@ -36,6 +24,18 @@ public class BlackJack {
         playersChoiceMenu(playerHand, cardDeck, dealerHand);
         printResult(playerHand, dealerHand);
 
+    }
+
+    private static void setBlackJackCardValues(Deck deck) {
+        for (int i = 0; i < 52; i++) {
+            if(i < 36) {
+                deck.getCards().get(i).setValue((i/4)+2);
+            } else if (i < 48) {
+                deck.getCards().get(i).setValue(10);
+            } else {
+                deck.getCards().get(i).setValue(11);
+            }
+        }
     }
 
     private static void playersChoiceMenu(Hand playersHand, Deck deck, Hand dealersHand) {

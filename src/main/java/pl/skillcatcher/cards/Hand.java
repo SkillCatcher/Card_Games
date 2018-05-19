@@ -2,7 +2,9 @@ package pl.skillcatcher.cards;
 
 public class Hand extends Deck {
 
-    public Hand() {}
+    public Hand() {
+        super(0, -1);
+    }
 
     public int getPoints() {
         int sum = 0;

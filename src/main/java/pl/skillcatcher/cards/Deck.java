@@ -11,6 +11,10 @@ public class Deck {
         return cards;
     }
 
+    public Card getACard(int index) {
+        return cards.get(index);
+    }
+
     public void setCards(List<Card> cards) {
         this.cards = cards;
     }
@@ -54,6 +58,6 @@ public class Deck {
             temp.add(randomCard);
         }
 
-        cards = temp;
+        setCards(temp);
     }
 }

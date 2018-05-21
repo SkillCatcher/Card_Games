@@ -34,8 +34,4 @@ public class Hand extends Deck {
         System.out.println("Current points: " + getPoints());
         System.out.println("");
     }
-
-    public boolean failCheck() {
-        return getPoints() > 21;
-    }
 }

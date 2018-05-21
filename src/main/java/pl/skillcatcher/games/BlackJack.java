@@ -1,5 +1,6 @@
 package pl.skillcatcher.games;
 
+import pl.skillcatcher.cards.CardNumber;
 import pl.skillcatcher.cards.Deck;
 import pl.skillcatcher.cards.Hand;
 
@@ -42,6 +43,8 @@ public class BlackJack {
     }
 
     private void currentSituation() {
+        decreaseAceValue(playersHand);
+
         System.out.println("Your current hand: ");
         playersHand.displayHand();
 
@@ -82,6 +85,7 @@ public class BlackJack {
 
     private void dealersTurn() {
         Scanner scan = new Scanner(System.in);
+        decreaseAceValue(dealersHand);
         System.out.println("Dealer currently has this hand: ");
         dealersHand.displayHand();
         System.out.println("Press ENTER to continue...");
@@ -105,10 +109,10 @@ public class BlackJack {
         String winner;
         String message;
 
-        if( (playerScore > dealerScore && !playersHand.failCheck()) || (dealersHand.failCheck()) ) {
+        if( (playerScore > dealerScore && !failCheck(playersHand)) || (failCheck(dealersHand)) ) {
             winner = "PLAYER";
             message = "Congratulations!!!";
-        } else if ( (dealerScore > playerScore && !dealersHand.failCheck()) || (playersHand.failCheck()) ) {
+        } else if ( (dealerScore > playerScore && !failCheck(dealersHand)) || (failCheck(playersHand)) ) {
             winner = "DEALER";
             message = "Better luck next time!";
         } else {
@@ -119,5 +123,20 @@ public class BlackJack {
         System.out.println("Final score:\nPlayer: " + playerScore +
                 "        " + "Dealer: " + dealerScore);
         System.out.println("The winner is...  " + winner + "!!!" + "\n" + message);
+    }
+
+    private boolean failCheck(Hand hand) {
+        return hand.getPoints() > 21;
+    }
+
+    private void decreaseAceValue(Hand hand) {
+        for (int i = 0; i < hand.getCards().size(); i++) {
+            if (hand.getPoints() > 21 &&
+                    hand.getACard(i).getNumber().equals(CardNumber.ACE) &&
+                    hand.getACard(i).getValue() != 1) {
+                hand.getACard(i).setValue(1);
+                break;
+            }
+        }
     }
 }

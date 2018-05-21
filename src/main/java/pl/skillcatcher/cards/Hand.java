@@ -27,12 +27,15 @@ public class Hand extends Deck {
     }
 
     public void displayHand() {
-        System.out.println("Your current hand: ");
         for (int i = 0; i < getCards().size(); i++) {
             System.out.println(i+1 + ". " + getACard(i).getName());
         }
 
-        System.out.println("Your current points: " + getPoints());
+        System.out.println("Current points: " + getPoints());
         System.out.println("");
+    }
+
+    public boolean failCheck() {
+        return getPoints() > 21;
     }
 }

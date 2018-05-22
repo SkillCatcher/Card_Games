@@ -11,12 +11,19 @@ public class BlackJack {
     private Deck deck;
     private Hand playersHand;
     private Hand dealersHand;
+    private int playersWins;
+    private int dealersWins;
+    private int roundsToPlay;
 
-    public BlackJack() {
+    Scanner scanner = new Scanner(System.in);
+
+    public BlackJack(int roundsToPlay) {
         this.deck = new Deck();
         this.playersHand = new Hand();
         this.dealersHand = new Hand();
-        this.setBlackJackCardValues();
+        this.playersWins = 0;
+        this.dealersWins = 0;
+        this.roundsToPlay = roundsToPlay;
     }
 
     private void setBlackJackCardValues() {
@@ -32,6 +39,7 @@ public class BlackJack {
     }
 
     public void startTheGame() {
+        setBlackJackCardValues();
         deck.shuffle();
         deck.dealACard(playersHand);
         deck.dealACard(dealersHand);
@@ -58,7 +66,6 @@ public class BlackJack {
     }
 
     private void makeMove() {
-        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Do you want a hit or do you want to stay? [Press 1 or 2, and confirm with ENTER]\n" +
                 "1 - Hit me! (Draw another card)\n" +
@@ -73,7 +80,8 @@ public class BlackJack {
                 break;
             case 2:
                 System.out.println("You've finished with " + playersHand.getPoints() + " points.\n" +
-                        "Now it's dealer's turn...");
+                        "Now it's dealer's turn...\n" +
+                        "/////////////////////////////////////////////////////////////////////////");
                 dealersTurn();
                 break;
             default:
@@ -84,17 +92,12 @@ public class BlackJack {
     }
 
     private void dealersTurn() {
-        Scanner scan = new Scanner(System.in);
         decreaseAceValue(dealersHand);
         System.out.println("Dealer currently has this hand: ");
         dealersHand.displayHand();
-        System.out.println("Press ENTER to continue...");
-        scan.nextLine();
 
         if (dealersHand.getPoints() < 17) {
-            System.out.println("Dealer draws another card...\n" +
-                    "Press ENTER to continue...");
-            scan.nextLine();
+            System.out.println("Dealer draws another card...");
             deck.dealACard(dealersHand);
             dealersTurn();
         } else {
@@ -110,9 +113,11 @@ public class BlackJack {
         String message;
 
         if( (playerScore > dealerScore && !failCheck(playersHand)) || (failCheck(dealersHand)) ) {
+            playersWins++;
             winner = "PLAYER";
             message = "Congratulations!!!";
         } else if ( (dealerScore > playerScore && !failCheck(dealersHand)) || (failCheck(playersHand)) ) {
+            dealersWins++;
             winner = "DEALER";
             message = "Better luck next time!";
         } else {
@@ -123,6 +128,20 @@ public class BlackJack {
         System.out.println("Final score:\nPlayer: " + playerScore +
                 "        " + "Dealer: " + dealerScore);
         System.out.println("The winner is...  " + winner + "!!!" + "\n" + message);
+        roundsToPlay--;
+
+        if (roundsToPlay > 0) {
+            System.out.println(roundsToPlay + " rounds left...");
+
+            deck = new Deck();
+            playersHand = new Hand();
+            dealersHand = new Hand();
+
+            startTheGame();
+        } else {
+            printFinalScore();
+        }
+
     }
 
     private boolean failCheck(Hand hand) {
@@ -138,5 +157,19 @@ public class BlackJack {
                 break;
             }
         }
+    }
+
+    private void printFinalScore() {
+        String winner;
+        if(playersWins > dealersWins) {
+            winner = "PLAYER";
+        } else {
+            winner = "DEALER";
+        }
+        System.out.println("Final score:" +
+                "\n  Player: " + playersWins + " wins" +
+                "\n  Dealer: " + dealersWins + " wins" +
+                "\n \n" +
+                winner + " WINS THE GAME!!!");
     }
 }

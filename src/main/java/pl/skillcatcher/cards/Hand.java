@@ -3,7 +3,7 @@ package pl.skillcatcher.cards;
 public class Hand extends Deck {
 
     public Hand() {
-        super(0, -1);
+        super(1, 0);
     }
 
     public int getPoints() {
@@ -30,8 +30,9 @@ public class Hand extends Deck {
         for (int i = 0; i < getCards().size(); i++) {
             System.out.println(i+1 + ". " + getACard(i).getName());
         }
+    }
 
-        System.out.println("Current points: " + getPoints());
-        System.out.println("");
+    public void displayPoints() {
+        System.out.println("\nCurrent points: " + getPoints() + "\n");
     }
 }

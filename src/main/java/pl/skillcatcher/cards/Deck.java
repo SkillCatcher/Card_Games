@@ -15,7 +15,7 @@ public class Deck {
         return cards.get(index);
     }
 
-    public void setCards(List<Card> cards) {
+    private void setCards(List<Card> cards) {
         this.cards = cards;
     }
 

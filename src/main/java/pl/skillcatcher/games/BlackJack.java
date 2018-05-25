@@ -15,8 +15,6 @@ public class BlackJack {
     private int dealersWins;
     private int roundsToPlay;
 
-    Scanner scanner = new Scanner(System.in);
-
     public BlackJack(int roundsToPlay) {
         this.deck = new Deck();
         this.playersHand = new Hand();
@@ -46,15 +44,16 @@ public class BlackJack {
         deck.dealACard(playersHand);
         deck.dealACard(dealersHand);
 
-        System.out.println("You can see, that dealer's got a " + dealersHand.getACard(0).getName() + ".");
         currentSituation();
     }
 
     private void currentSituation() {
+        System.out.println("You can see, that dealer's got a " + dealersHand.getACard(0).getName() + ".\n");
         decreaseAceValue(playersHand);
 
         System.out.println("Your current hand: ");
         playersHand.displayHand();
+        playersHand.displayPoints();
 
         if(playersHand.getPoints() > 21) {
             System.out.println("Oops... your currently have " + playersHand.getPoints() +
@@ -66,6 +65,7 @@ public class BlackJack {
     }
 
     private void makeMove() {
+        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Do you want a hit or do you want to stay? [Press 1 or 2, and confirm with ENTER]\n" +
                 "1 - Hit me! (Draw another card)\n" +
@@ -80,8 +80,7 @@ public class BlackJack {
                 break;
             case 2:
                 System.out.println("You've finished with " + playersHand.getPoints() + " points.\n" +
-                        "Now it's dealer's turn...\n" +
-                        "/////////////////////////////////////////////////////////////////////////");
+                        "Now it's dealer's turn...\n");
                 dealersTurn();
                 break;
             default:
@@ -92,9 +91,11 @@ public class BlackJack {
     }
 
     private void dealersTurn() {
+        confirm();
         decreaseAceValue(dealersHand);
-        System.out.println("Dealer currently has this hand: ");
+        System.out.println("\nDealer currently has this hand: ");
         dealersHand.displayHand();
+        dealersHand.displayPoints();
 
         if (dealersHand.getPoints() < 17) {
             System.out.println("Dealer draws another card...");
@@ -107,6 +108,7 @@ public class BlackJack {
     }
 
     private void printResults() {
+        confirm();
         int playerScore = playersHand.getPoints();
         int dealerScore = dealersHand.getPoints();
         String winner;
@@ -125,18 +127,18 @@ public class BlackJack {
             message = "TIE GAME, Ladies ana Gentlemen!";
         }
 
-        System.out.println("Final score:\nPlayer: " + playerScore +
+        System.out.println("\nFinal score:\nPlayer: " + playerScore +
                 "        " + "Dealer: " + dealerScore);
-        System.out.println("The winner is...  " + winner + "!!!" + "\n" + message);
+        System.out.println("\nThe winner is...  " + winner + "!!!" + "\n" + message + "\n");
         roundsToPlay--;
 
         if (roundsToPlay > 0) {
-            System.out.println(roundsToPlay + " rounds left...");
+            System.out.println("\n" + roundsToPlay + " rounds left...");
 
             deck = new Deck();
             playersHand = new Hand();
             dealersHand = new Hand();
-
+            confirm();
             startTheGame();
         } else {
             printFinalScore();
@@ -160,16 +162,23 @@ public class BlackJack {
     }
 
     private void printFinalScore() {
+        confirm();
         String winner;
         if(playersWins > dealersWins) {
             winner = "PLAYER";
         } else {
             winner = "DEALER";
         }
-        System.out.println("Final score:" +
+        System.out.println("\nFinal score:" +
                 "\n  Player: " + playersWins + " wins" +
                 "\n  Dealer: " + dealersWins + " wins" +
                 "\n \n" +
                 winner + " WINS THE GAME!!!");
+    }
+
+    private void confirm() {
+        System.out.println("To continue, press Enter...");
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
     }
 }

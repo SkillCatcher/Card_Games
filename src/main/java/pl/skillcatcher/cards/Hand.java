@@ -1,9 +1,14 @@
 package pl.skillcatcher.cards;
 
+import java.util.ArrayList;
+
 public class Hand extends Deck {
+
+    private ArrayList<Card> collectedCards;
 
     public Hand() {
         super(1, 0);
+        collectedCards = new ArrayList<Card>();
     }
 
     public int getPoints() {
@@ -34,5 +39,17 @@ public class Hand extends Deck {
 
     public void displayPoints() {
         System.out.println("\nCurrent points: " + getPoints() + "\n");
+    }
+
+    public void collectCards(ArrayList<Card> pool) {
+        collectedCards.addAll(pool);
+    }
+
+    public void collectCards(Card card) {
+        collectedCards.add(card);
+    }
+
+    public void clearCollectedCards() {
+        collectedCards = new ArrayList<Card>();
     }
 }

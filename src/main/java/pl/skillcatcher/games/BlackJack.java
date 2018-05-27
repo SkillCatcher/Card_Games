@@ -6,7 +6,7 @@ import pl.skillcatcher.cards.Hand;
 
 import java.util.Scanner;
 
-public class BlackJack {
+public class BlackJack implements Game {
 
     private Deck deck;
     private Hand playersHand;
@@ -15,7 +15,7 @@ public class BlackJack {
     private int dealersWins;
     private int roundsToPlay;
 
-    public BlackJack(int roundsToPlay) {
+    BlackJack(int roundsToPlay) {
         this.deck = new Deck();
         this.playersHand = new Hand();
         this.dealersHand = new Hand();
@@ -24,7 +24,7 @@ public class BlackJack {
         this.roundsToPlay = roundsToPlay;
     }
 
-    private void setBlackJackCardValues() {
+    public void setCardValues() {
         for (int i = 0; i < 52; i++) {
             if(i < 36) {
                 deck.getACard(i).setValue((i/4)+2);
@@ -37,7 +37,7 @@ public class BlackJack {
     }
 
     public void startTheGame() {
-        setBlackJackCardValues();
+        setCardValues();
         deck.shuffle();
         deck.dealACard(playersHand);
         deck.dealACard(dealersHand);
@@ -47,7 +47,7 @@ public class BlackJack {
         currentSituation();
     }
 
-    private void currentSituation() {
+    public void currentSituation() {
         System.out.println("You can see, that dealer's got a " + dealersHand.getACard(0).getName() + ".\n");
         decreaseAceValue(playersHand);
 
@@ -64,7 +64,7 @@ public class BlackJack {
         }
     }
 
-    private void makeMove() {
+    public void makeMove() {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Do you want a hit or do you want to stay? [Press 1 or 2, and confirm with ENTER]\n" +
@@ -81,7 +81,7 @@ public class BlackJack {
             case 2:
                 System.out.println("You've finished with " + playersHand.getPoints() + " points.\n" +
                         "Now it's dealer's turn...\n");
-                dealersTurn();
+                AI_Move();
                 break;
             default:
                 System.out.println("Wrong command - try again...\n");
@@ -90,7 +90,7 @@ public class BlackJack {
         }
     }
 
-    private void dealersTurn() {
+    public void AI_Move() {
         confirm();
         decreaseAceValue(dealersHand);
         System.out.println("\nDealer currently has this hand: ");
@@ -100,14 +100,14 @@ public class BlackJack {
         if (dealersHand.getPoints() < 17) {
             System.out.println("Dealer draws another card...");
             deck.dealACard(dealersHand);
-            dealersTurn();
+            AI_Move();
         } else {
             System.out.println("Dealer ends game with " + dealersHand.getPoints() + " points");
             printResults();
         }
     }
 
-    private void printResults() {
+    public void printResults() {
         confirm();
         int playerScore = playersHand.getPoints();
         int dealerScore = dealersHand.getPoints();
@@ -161,7 +161,7 @@ public class BlackJack {
         }
     }
 
-    private void printFinalScore() {
+    public void printFinalScore() {
         confirm();
         String winner;
         if(playersWins > dealersWins) {
@@ -176,7 +176,7 @@ public class BlackJack {
                 winner + " WINS THE GAME!!!");
     }
 
-    private void confirm() {
+    public void confirm() {
         System.out.println("To continue, press Enter...");
         Scanner scanner = new Scanner(System.in);
         scanner.nextLine();

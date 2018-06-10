@@ -34,3 +34,10 @@ hs_err_pid*
 /.idea/libraries/Maven__junit_junit_4_12.xml
 /.idea/libraries/Maven__org_hamcrest_hamcrest_core_1_3.xml
 /.idea/uiDesigner.xml
+/.idea/kotlinc.xml
+/.idea/sonarSettings.xml
+.idea/inspectionProfiles/
+src/main/java/pl/skillcatcher/exceptions/
+src/main/resources/
+src/test/
+target/

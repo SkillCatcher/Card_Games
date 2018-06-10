@@ -1,12 +1,22 @@
 package pl.skillcatcher.games;
 
-public interface Game {
-    void setCardValues();
-    void startTheGame();
-    void currentSituation();
-    void makeMove();
-    void AI_Move();
-    void printResults();
-    void printFinalScore();
-    void confirm();
+import pl.skillcatcher.cards.Deck;
+import pl.skillcatcher.cards.Player;
+
+import java.util.Scanner;
+
+abstract class Game {
+
+    Deck deck;
+    int numberOfPlayers;
+    Player currentPlayer;
+
+    abstract void setCardValues();
+    abstract void startTheGame();
+    abstract void currentSituation();
+    abstract void makeMove();
+    abstract void AI_Move();
+    abstract void printResults();
+    abstract void printFinalScore();
+
 }

@@ -6,9 +6,8 @@ import pl.skillcatcher.cards.Hand;
 
 import java.util.Scanner;
 
-public class BlackJack implements Game {
+public class BlackJack extends Game implements Confirmable {
 
-    private Deck deck;
     private Hand playersHand;
     private Hand dealersHand;
     private int playersWins;

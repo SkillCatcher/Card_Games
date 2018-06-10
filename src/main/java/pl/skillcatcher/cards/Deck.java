@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Deck {
 
-    private List<Card> cards = new ArrayList<Card>();
+    private List<Card> cards = new ArrayList<>();
 
     public List<Card> getCards() {
         return cards;
@@ -15,7 +15,7 @@ public class Deck {
         return cards.get(index);
     }
 
-    private void setCards(List<Card> cards) {
+    public void setCards(List<Card> cards) {
         this.cards = cards;
     }
 
@@ -25,7 +25,7 @@ public class Deck {
         }
     }
 
-    public Deck(int firstCardId, int lastCardId) {
+    Deck(int firstCardId, int lastCardId) {
         for (int i = firstCardId; i < lastCardId+1; i++) {
             cards.add(new Card(i));
         }
@@ -39,7 +39,7 @@ public class Deck {
 
     public Deck(int[] customDeck) {
         for (int i : customDeck) {
-            cards.add(new Card(customDeck[i]));
+            cards.add(new Card(i));
         }
     }
 
@@ -50,8 +50,9 @@ public class Deck {
     }
 
     public void shuffle() {
-        List<Card> temp = new ArrayList<Card>();
-        for (int i = 0; i < cards.size(); i++) {
+        List<Card> temp = new ArrayList<>();
+        final int size = cards.size();
+        for (int i = 0; i < size; i++) {
             int randomCardId = (int)Math.floor(Math.random()*cards.size());
             Card randomCard = cards.get(randomCardId);
             cards.remove(randomCardId);

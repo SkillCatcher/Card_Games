@@ -6,22 +6,14 @@ public class Player {
     private int points;
     private Hand hand;
     private PlayerStatus playerStatus;
-    //private int id;
+    private int id;
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public int getPoints() {
         return points;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
     }
 
     public Hand getHand() {
@@ -40,29 +32,25 @@ public class Player {
         this.playerStatus = playerStatus;
     }
 
-//    public int getId() {
-//        return id;
-//    }
-//
-//    public void setId(int id) {
-//        this.id = id;
-//    }
+    public int getId() {
+        return id;
+    }
 
     public Player() {
         this.playerStatus = PlayerStatus.NOT_ACTIVE;
     }
 
-    public Player(String name) {
+    public Player(String name, int id) {
         this.name = name;
-        //this.id = id;
+        this.id = id;
         this.points = 0;
         this.hand = new Hand();
         this.playerStatus = PlayerStatus.USER;
     }
 
-    public Player(String name, PlayerStatus playerStatus) {
+    public Player(String name, int id, PlayerStatus playerStatus) {
         this.name = name;
-        //this.id = id;
+        this.id = id;
         this.points = 0;
         this.hand = new Hand();
         this.playerStatus = playerStatus;

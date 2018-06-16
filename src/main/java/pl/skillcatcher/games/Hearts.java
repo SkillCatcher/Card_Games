@@ -132,7 +132,7 @@ public class Hearts extends Game implements Confirmable {
 
     private Player whoGotTwoOfClubs() {
         for (Player player : players) {
-            for (Card card : player.getHand().getCards()) {
+            for (Card card : player.getCards()) {
                 if (card.getId() == 0) {
                     return player;
                 }
@@ -143,7 +143,7 @@ public class Hearts extends Game implements Confirmable {
 
     private void cardsPassExecute(Player receivingPlayer, ArrayList<Card> cards) {
         for (Card card : cards) {
-            receivingPlayer.getHand().getCards().add(card);
+            receivingPlayer.getCards().add(card);
         }
     }
 
@@ -166,19 +166,19 @@ public class Hearts extends Game implements Confirmable {
             int choice = scanner.nextInt();
 
             for (int i = 0; i < numberOfCardsChosen; i++) {
-                if (cardSet.get(i).equals(player.getHand().getACard(choice-1))) {
+                if (cardSet.get(i).equals(player.getCard(choice-1))) {
                     cardPickedFirstTime = false;
                     break;
                 }
             }
 
             if (cardPickedFirstTime) {
-                cardSet.add(player.getHand().getACard(choice - 1));
+                cardSet.add(player.getCard(choice - 1));
                 numberOfCardsChosen++;
             } else {
-                System.out.println("Choice of " + player.getHand().getACard(choice-1).getName()
+                System.out.println("Choice of " + player.getCard(choice-1).getName()
                         + " was cancelled.");
-                cardSet.remove(player.getHand().getACard(choice-1));
+                cardSet.remove(player.getCard(choice-1));
                 numberOfCardsChosen--;
             }
         }
@@ -205,7 +205,7 @@ public class Hearts extends Game implements Confirmable {
             confirm();
 
             for (Card card : cardSets.get(i)) {
-                players[i].getHand().getCards().remove(card);
+                players[i].getCards().remove(card);
             }
         }
 

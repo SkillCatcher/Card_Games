@@ -1,5 +1,7 @@
 package pl.skillcatcher.cards;
 
+import java.util.List;
+
 public class Player {
 
     private String name;
@@ -58,6 +60,14 @@ public class Player {
 
     public void addPoints(int points) {
         this.points += points;
+    }
+
+    public Card getCard(int index) {
+        return getHand().getACard(index);
+    }
+
+    public List<Card> getCards() {
+        return getHand().getCards();
     }
 
 }

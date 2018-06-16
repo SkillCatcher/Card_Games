@@ -2,6 +2,8 @@ package pl.skillcatcher.games;
 
 import pl.skillcatcher.cards.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 public class Hearts extends Game implements Confirmable {
@@ -24,7 +26,7 @@ public class Hearts extends Game implements Confirmable {
             if (i < numberOfPlayers) {
                 System.out.println("Player " + (i+1) + " - name:\n");
                 String name = scanner.nextLine();
-                players[i] = new Player(name, i+1);
+                players[i] = new Player(name, i);
             } else {
                 players[i] = new Player("A.I. #" + (i+1-numberOfPlayers),i+1 , PlayerStatus.AI);
             }
@@ -52,21 +54,17 @@ public class Hearts extends Game implements Confirmable {
             }
         }
 
-        for (Player player : players) {
-            player.getHand().sortHandById();
-        }
-
         if (gameRotation() != 0) {
             cardPassTurn();
         }
 
         currentPlayer = whoGotTwoOfClubs();
         for (Player player : players) {
-            player.getHand().sortHandById();
             System.out.println(player.getName() + ":\n");
             player.getHand().displayHand();
             System.out.println("//////////////////////////////////////");
         }
+
         //currentSituation();
     }
 
@@ -86,6 +84,7 @@ public class Hearts extends Game implements Confirmable {
 
         System.out.println(currentPlayer.getName() + " - your hand:");
         currentPlayer.getHand().displayHand();
+        System.out.println("\nPick a card: ");
     }
 
     public void AI_Move() {
@@ -142,41 +141,82 @@ public class Hearts extends Game implements Confirmable {
         return null;
     }
 
-    private void cardsPassExecute(Player receivingPlayer, Card[] cards) {
+    private void cardsPassExecute(Player receivingPlayer, ArrayList<Card> cards) {
         for (Card card : cards) {
             receivingPlayer.getHand().getCards().add(card);
         }
     }
 
-    private void cardPassTurn() {
+    private void cardPassChoice(Player player, ArrayList<Card> cardSet) {
         Scanner scanner = new Scanner(System.in);
+        final int numberOfCardsToPass = 3;
+        int numberOfCardsChosen = 0;
 
-        Card[][] cardSets = new Card[4][3];
+        while (numberOfCardsChosen < numberOfCardsToPass) {
+            boolean cardPickedFirstTime = true;
 
-        for (int i = 0; i < cardSets.length; i++) {
+            if (numberOfCardsChosen > 0) {
+                System.out.println("Your choices so far...");
+                for (int i = 0; i < numberOfCardsChosen; i++) {
+                    System.out.println((i+1) + ". " + cardSet.get(i).getName());
+                }
+            }
+
+            System.out.println("Choose card number " + (numberOfCardsChosen+1) + ":");
+            int choice = scanner.nextInt();
+
+            for (int i = 0; i < numberOfCardsChosen; i++) {
+                if (cardSet.get(i).equals(player.getHand().getACard(choice-1))) {
+                    cardPickedFirstTime = false;
+                    break;
+                }
+            }
+
+            if (cardPickedFirstTime) {
+                cardSet.add(player.getHand().getACard(choice - 1));
+                numberOfCardsChosen++;
+            } else {
+                System.out.println("Choice of " + player.getHand().getACard(choice-1).getName()
+                        + " was cancelled.");
+                cardSet.remove(player.getHand().getACard(choice-1));
+                numberOfCardsChosen--;
+            }
+        }
+    }
+
+    private void cardPassTurn() {
+        ArrayList<ArrayList<Card>> cardSets = new ArrayList<>();
+
+        for (int i = 0; i < 4; i++) {
+            cardSets.add(i, new ArrayList<>());
+
             System.out.println("Card Pass Turn for player: " + players[i].getName());
             confirm();
+
             System.out.println("Your hand:");
             players[i].getHand().displayHand();
 
-            System.out.println("Choose 3 cards from the list by their number. They'll be passed to "
+            System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
+                    "simply pick the same card again). They'll be passed to "
                     + players[( i + gameRotation() ) % 4].getName() + ": \n");
 
-            for (int j = 0; j < cardSets[i].length; j++) {
-                System.out.println("Number " + (j+1));
-                int choice = scanner.nextInt();
-                cardSets[i][j] = players[i].getHand().getACard(choice-1);
-                players[i].getHand().getCards().remove(choice);
-            }
-
-            System.out.println("You've chosen: " + cardSets[i][0].getName() + ", " + cardSets[i][1].getName() + ", " +
-                    cardSets[i][2].getName() + "\n");
+            cardPassChoice(players[i], cardSets.get(i));
+            printCardChoices(cardSets.get(i));
             confirm();
+
+            for (Card card : cardSets.get(i)) {
+                players[i].getHand().getCards().remove(card);
+            }
         }
 
-        for (int i = 0; i < cardSets.length; i++) {
-            cardsPassExecute(players[(i + gameRotation()) % 4], cardSets[i]);
+        for (int i = 0; i < 4; i++) {
+            cardsPassExecute(players[(i + gameRotation()) % 4], cardSets.get(i));
         }
+    }
+
+    private void printCardChoices(ArrayList<Card> cardSet) {
+        System.out.println("You've chosen: ");
+        for (Card card : cardSet) System.out.println(card.getName());
     }
 
     private int gameRotation() {

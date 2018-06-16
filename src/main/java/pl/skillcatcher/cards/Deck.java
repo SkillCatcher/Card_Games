@@ -1,6 +1,7 @@
 package pl.skillcatcher.cards;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Deck {
@@ -50,15 +51,16 @@ public class Deck {
     }
 
     public void shuffle() {
-        List<Card> temp = new ArrayList<>();
-        final int size = cards.size();
-        for (int i = 0; i < size; i++) {
-            int randomCardId = (int)Math.floor(Math.random()*cards.size());
-            Card randomCard = cards.get(randomCardId);
-            cards.remove(randomCardId);
-            temp.add(randomCard);
-        }
-
-        setCards(temp);
+        Collections.shuffle(getCards());
+//        List<Card> temp = new ArrayList<>();
+//        final int size = cards.size();
+//        for (int i = 0; i < size; i++) {
+//            int randomCardId = (int)Math.floor(Math.random()*cards.size());
+//            Card randomCard = cards.get(randomCardId);
+//            cards.remove(randomCardId);
+//            temp.add(randomCard);
+//        }
+//
+//        setCards(temp);
     }
 }

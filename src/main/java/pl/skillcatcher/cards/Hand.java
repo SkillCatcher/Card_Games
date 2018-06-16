@@ -1,7 +1,6 @@
 package pl.skillcatcher.cards;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class Hand extends Deck {
@@ -34,6 +33,7 @@ public class Hand extends Deck {
     }
 
     public void displayHand() {
+        sortCardsByColour();
         for (int i = 0; i < getCards().size(); i++) {
             System.out.println(i+1 + ". " + getACard(i).getName());
         }
@@ -55,12 +55,35 @@ public class Hand extends Deck {
         collectedCards = new ArrayList<>();
     }
 
-    public void sortHandById() {
+    private void sortCardsById() {
         class IdComparator implements Comparator<Card> {
             public int compare(Card o1, Card o2) {
                 return Integer.compare(o1.getId(), o2.getId());
             }
         }
         getCards().sort(new IdComparator());
+    }
+
+    private void sortCardsByColour() {
+        ArrayList<CardColour> cardColours = new ArrayList<>();
+        ArrayList<Card> sortedHand = new ArrayList<>();
+
+        cardColours.add(CardColour.CLUBS);
+        cardColours.add(CardColour.DIAMONDS);
+        cardColours.add(CardColour.HEARTS);
+        cardColours.add(CardColour.SPADES);
+
+        for (CardColour cardColour : cardColours) {
+            Hand temp = new Hand();
+
+            for (Card card : getCards()) {
+                if (card.getColour().equals(cardColour)) {
+                    temp.getCards().add(card);
+                }
+            }
+            temp.sortCardsById();
+            sortedHand.addAll(temp.getCards());
+        }
+        setCards(sortedHand);
     }
 }

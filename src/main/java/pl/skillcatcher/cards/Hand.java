@@ -22,6 +22,10 @@ public class Hand extends Deck {
         return sum;
     }
 
+    ArrayList<Card> getCollectedCards() {
+        return collectedCards;
+    }
+
     @Override
     public void dealACard(Hand hand) {
         System.out.println("Dealing cards from player's hand is not allowed. Try 'playACard' method instead.");

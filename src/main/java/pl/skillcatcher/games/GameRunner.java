@@ -15,6 +15,7 @@ public class GameRunner {
 
         Hearts kierki = new Hearts();
         kierki.startTheGame();
+        //kierki.printFinalScore();
 
 
 

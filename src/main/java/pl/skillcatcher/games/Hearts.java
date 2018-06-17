@@ -3,6 +3,8 @@ package pl.skillcatcher.games;
 import pl.skillcatcher.cards.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class Hearts extends Game implements Confirmable, SetPlayersNames {
@@ -45,9 +47,9 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
             }
         }
 
-//        if (gameRotation() != 0) {
-//            cardPassTurn();
-//        }
+        if (gameRotation() != 0) {
+            cardPassTurn();
+        }
 
         currentPlayer = whoGotTwoOfClubs();
 
@@ -57,6 +59,8 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
             }
             moveResult();
         }
+
+        printResults();
     }
 
     public void currentSituation(Player player) {
@@ -117,8 +121,17 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         return players[winnerIndex];
     }
 
+    private void updatePoints() {
+        for (Player player : players) {
+            for (Card card : player.getCollectedCards()) {
+                player.addPoints(card.getValue());
+            }
+        }
+    }
+
     public void printResults() {
         boolean endGame = false;
+        updatePoints();
         System.out.println("Points after round " + currentRound + ":");
         for (int i = 0; i < players.length; i++) {
             System.out.println((i+1) + ". " + players[i].getName() + ": " + players[i].getPoints());
@@ -137,12 +150,27 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
     }
 
     public void printFinalScore() {
-        Player winner;
-        int[] score = new int[players.length];
-        for (int i = 0; i < score.length; i++) {
-            score[i] = players[i].getPoints();
+//        for (Player player : players) {
+//            player.setPoints((int)Math.floor(Math.random()*100));
+//        }
+        sortPlayersByPoints();
+        Player winner = players[0];
+        int i = 0;
+        for (Player player : players) {
+            System.out.println((i+1) + ". " + player.getName() + ": " + player.getPoints());
+            i++;
         }
-        //compare
+        System.out.println("\nWinner - " + winner.getName());
+    }
+
+    private void sortPlayersByPoints() {
+        class pointsComparator implements Comparator<Player> {
+            @Override
+            public int compare(Player o1, Player o2) {
+                return Integer.compare(o1.getPoints(), o2.getPoints());
+            }
+        }
+        Arrays.asList(players).sort(new pointsComparator());
     }
 
     private Player whoGotTwoOfClubs() {

@@ -1,5 +1,6 @@
 package pl.skillcatcher.cards;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
@@ -16,6 +17,10 @@ public class Player {
 
     public int getPoints() {
         return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
     }
 
     public Hand getHand() {
@@ -36,6 +41,10 @@ public class Player {
 
     public int getId() {
         return id;
+    }
+
+    public ArrayList<Card> getCollectedCards() {
+        return this.hand.getCollectedCards();
     }
 
     public Player() {

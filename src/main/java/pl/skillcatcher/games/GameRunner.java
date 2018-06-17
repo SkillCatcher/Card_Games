@@ -14,7 +14,8 @@ public class GameRunner {
 //        game.startTheGame();
 
         Hearts kierki = new Hearts();
-        kierki.startTheGame();
+        //kierki.startTheGame();
+        kierki.confirm();
 
 
 

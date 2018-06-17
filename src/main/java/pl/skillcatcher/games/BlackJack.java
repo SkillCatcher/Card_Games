@@ -3,6 +3,7 @@ package pl.skillcatcher.games;
 import pl.skillcatcher.cards.CardNumber;
 import pl.skillcatcher.cards.Deck;
 import pl.skillcatcher.cards.Hand;
+import pl.skillcatcher.cards.Player;
 
 import java.util.Scanner;
 
@@ -43,10 +44,10 @@ public class BlackJack extends Game implements Confirmable {
         deck.dealACard(playersHand);
         deck.dealACard(dealersHand);
 
-        currentSituation();
+        currentSituation(currentPlayer);
     }
 
-    public void currentSituation() {
+    public void currentSituation(Player player) {
         System.out.println("You can see, that dealer's got a " + dealersHand.getACard(0).getName() + ".\n");
         decreaseAceValue(playersHand);
 
@@ -59,11 +60,11 @@ public class BlackJack extends Game implements Confirmable {
                     " points, which is more than 21. You've lost...");
             printResults();
         } else {
-            makeMove();
+            makeMove(currentPlayer);
         }
     }
 
-    public void makeMove() {
+    public void makeMove(Player player) {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Do you want a hit or do you want to stay? [Press 1 or 2, and confirm with ENTER]\n" +
@@ -75,7 +76,7 @@ public class BlackJack extends Game implements Confirmable {
         switch (choice) {
             case 1:
                 deck.dealACard(playersHand);
-                currentSituation();
+                currentSituation(currentPlayer);
                 break;
             case 2:
                 System.out.println("You've finished with " + playersHand.getPoints() + " points.\n" +
@@ -84,7 +85,7 @@ public class BlackJack extends Game implements Confirmable {
                 break;
             default:
                 System.out.println("Wrong command - try again...\n");
-                makeMove();
+                makeMove(currentPlayer);
                 break;
         }
     }
@@ -173,11 +174,5 @@ public class BlackJack extends Game implements Confirmable {
                 "\n  Dealer: " + dealersWins + " wins" +
                 "\n \n" +
                 winner + " WINS THE GAME!!!");
-    }
-
-    public void confirm() {
-        System.out.println("To continue, press Enter...");
-        Scanner scanner = new Scanner(System.in);
-        scanner.nextLine();
     }
 }

@@ -3,10 +3,9 @@ package pl.skillcatcher.games;
 import pl.skillcatcher.cards.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Scanner;
 
-public class Hearts extends Game implements Confirmable {
+public class Hearts extends Game implements Confirmable, SetPlayersNames {
 
 
     private Player[] players;
@@ -15,22 +14,14 @@ public class Hearts extends Game implements Confirmable {
     private boolean heartsAllowed;
 
     Hearts() {
-        Scanner scanner = new Scanner(System.in);
+
         this.heartsAllowed = false;
         this.numberOfPlayers = 4;
         this.deck = new Deck();
         this.currentRound = 1;
         this.pool = new Card[4];
         this.players = new Player[4];
-        for (int i = 0; i < 4; i++) {
-            if (i < numberOfPlayers) {
-                System.out.println("Player " + (i+1) + " - name:\n");
-                String name = scanner.nextLine();
-                players[i] = new Player(name, i);
-            } else {
-                players[i] = new Player("A.I. #" + (i+1-numberOfPlayers),i+1 , PlayerStatus.AI);
-            }
-        }
+        setNames(numberOfPlayers, players);
     }
 
     public void setCardValues() {
@@ -59,32 +50,46 @@ public class Hearts extends Game implements Confirmable {
         }
 
         currentPlayer = whoGotTwoOfClubs();
-        for (Player player : players) {
-            System.out.println(player.getName() + ":\n");
-            player.getHand().displayHand();
-            System.out.println("//////////////////////////////////////");
+//        for (Player player : players) {
+//            System.out.println(player.getName() + ":\n");
+//            player.getHand().displayHand();
+//            System.out.println("//////////////////////////////////////");
+//        }
+
+        for (int i = currentPlayer.getId(); i < currentPlayer.getId() + 4; i++) {
+            currentSituation(players[i%4]);
         }
 
-        //currentSituation();
+        moveResult();
+
     }
 
-    public void currentSituation() {
+    public void currentSituation(Player player) {
+
+        System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
+                + "\nOther players - no peeking :)\n");
+        confirm();
         System.out.println("Cards in the game so far:");
         displayPool();
         confirm();
 
-        if (currentPlayer.getPlayerStatus().equals(PlayerStatus.USER)) {
-            makeMove();
+        if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
+            makeMove(player);
         } else {
             AI_Move();
         }
     }
 
-    public void makeMove() {
+    public void makeMove(Player player) {
+        Scanner scanner = new Scanner(System.in);
 
-        System.out.println(currentPlayer.getName() + " - your hand:");
-        currentPlayer.getHand().displayHand();
+        System.out.println(player.getName() + " - your hand:");
+        player.getHand().displayHand();
+
         System.out.println("\nPick a card: ");
+        int choice = scanner.nextInt();
+        //CHECK IF CARD ALLOWED
+        pool[player.getId()] = player.getHand().playACard(choice-1);
     }
 
     public void AI_Move() {
@@ -92,8 +97,14 @@ public class Hearts extends Game implements Confirmable {
     }
 
     private void moveResult() {
+        System.out.println("Cards in game:");
         displayPool();
+        Card winningCard = pool[currentPlayer.getId()];
+
+        //compare
         System.out.println("This pool goes to "); //add winner name
+        //add cards to collected list of winner
+        checkForEnablingHearts();
     }
 
     public void printResults() {
@@ -122,12 +133,6 @@ public class Hearts extends Game implements Confirmable {
             score[i] = players[i].getPoints();
         }
         //compare
-    }
-
-    public void confirm() {
-        System.out.println("To continue, press Enter...");
-        Scanner scanner = new Scanner(System.in);
-        scanner.nextLine();
     }
 
     private Player whoGotTwoOfClubs() {
@@ -232,9 +237,9 @@ public class Hearts extends Game implements Confirmable {
         }
     }
 
-    private void enableHearts() {
+    private void checkForEnablingHearts() {
         for (Card card : pool) {
-            if (card.getColour() == CardColour.HEARTS) {
+            if (card.getColour().equals(CardColour.HEARTS)) {
                 heartsAllowed = true;
             }
         }
@@ -249,7 +254,7 @@ public class Hearts extends Game implements Confirmable {
             if (pool[i] == null) {
                 System.out.println((i+1) + ". ---");
             } else {
-                System.out.println((i+1) + ". " + pool[i].getName());
+                System.out.println((i+1) + ". " + pool[i].getName() + " (" + players[i].getName() + ")");
             }
         }
     }

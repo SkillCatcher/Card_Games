@@ -1,6 +1,7 @@
 package pl.skillcatcher.cards;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class Hand extends Deck {
@@ -43,8 +44,11 @@ public class Hand extends Deck {
         System.out.println("\nCurrent points: " + getPoints() + "\n");
     }
 
-    public void collectCards(ArrayList<Card> pool) {
-        collectedCards.addAll(pool);
+    public void collectCards(Card[] pool) {
+        collectedCards.addAll(Arrays.asList(pool));
+        for (int i = 0; i < pool.length; i++) {
+            Arrays.asList(pool).set(i, null);
+        }
     }
 
     public void collectCards(Card card) {

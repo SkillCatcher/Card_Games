@@ -45,23 +45,18 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
             }
         }
 
-        if (gameRotation() != 0) {
-            cardPassTurn();
-        }
-
-        currentPlayer = whoGotTwoOfClubs();
-//        for (Player player : players) {
-//            System.out.println(player.getName() + ":\n");
-//            player.getHand().displayHand();
-//            System.out.println("//////////////////////////////////////");
+//        if (gameRotation() != 0) {
+//            cardPassTurn();
 //        }
 
-        for (int i = currentPlayer.getId(); i < currentPlayer.getId() + 4; i++) {
-            currentSituation(players[i%4]);
+        currentPlayer = whoGotTwoOfClubs();
+
+        while (currentPlayer.getCards().size() > 0) {
+            for (int i = currentPlayer.getId(); i < currentPlayer.getId() + 4; i++) {
+                currentSituation(players[i%4]);
+            }
+            moveResult();
         }
-
-        moveResult();
-
     }
 
     public void currentSituation(Player player) {
@@ -99,12 +94,27 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
     private void moveResult() {
         System.out.println("Cards in game:");
         displayPool();
-        Card winningCard = pool[currentPlayer.getId()];
-
-        //compare
-        System.out.println("This pool goes to "); //add winner name
-        //add cards to collected list of winner
+        Player winner = poolWinner();
+        System.out.println("This pool goes to " + winner.getName());
+        confirm();
         checkForEnablingHearts();
+        winner.getHand().collectCards(pool);
+        currentPlayer = winner;
+    }
+
+    private Player poolWinner() {
+        int winnerIndex = currentPlayer.getId();
+        Card winningCard = pool[currentPlayer.getId()];
+        CardColour validColour = pool[currentPlayer.getId()].getColour();
+        for (int i = 1; i < pool.length; i++) {
+            if(pool[(currentPlayer.getId()+i)%4].getColour().equals(validColour)) {
+                if(pool[(currentPlayer.getId()+i)%4].getId() > winningCard.getId()) {
+                    winningCard = pool[(currentPlayer.getId()+i)%4];
+                    winnerIndex = (currentPlayer.getId()+i)%4;
+                }
+            }
+        }
+        return players[winnerIndex];
     }
 
     public void printResults() {

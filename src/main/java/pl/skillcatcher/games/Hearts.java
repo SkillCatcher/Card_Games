@@ -8,15 +8,12 @@ import java.util.Comparator;
 import java.util.Scanner;
 
 public class Hearts extends Game implements Confirmable, SetPlayersNames {
-
-
     private Player[] players;
     private int currentRound;
     private Card[] pool;
     private boolean heartsAllowed;
 
     Hearts() {
-
         this.heartsAllowed = false;
         this.numberOfPlayers = 4;
         this.deck = new Deck();
@@ -59,12 +56,10 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
             }
             moveResult();
         }
-
         printResults();
     }
 
     public void currentSituation(Player player) {
-
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
         confirm();
@@ -87,8 +82,19 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
 
         System.out.println("\nPick a card: ");
         int choice = scanner.nextInt();
-        //CHECK IF CARD ALLOWED
-        pool[player.getId()] = player.getHand().playACard(choice-1);
+        if (canBePlayed(player.getHand(), player.getHand().playACard(choice-1))) {
+            pool[player.getId()] = player.getHand().playACard(choice-1);
+        } else {
+            System.out.println("Sorry - you can't play that card. Possible reasons:"
+                    + "\na) card's colour doesn't match with color of the first card,"
+                    + "\nb) hearts still aren't allowed,"
+                    + "\nc) it's first deal - it has to start with Two of Clubs and " +
+                    "cards with points are not allowed.");
+            System.out.println("\nPlease choose again...");
+            confirm();
+            makeMove(player);
+        }
+
     }
 
     public void AI_Move() {
@@ -170,7 +176,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
                 return Integer.compare(o1.getPoints(), o2.getPoints());
             }
         }
-        Arrays.asList(players).sort(new pointsComparator());
+        Arrays.sort(players, new pointsComparator());
     }
 
     private Player whoGotTwoOfClubs() {
@@ -283,7 +289,59 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    private boolean canBePlayed(Card card) {
+    private boolean canBePlayed(Hand hand, Card card) {
+        return canBePlayed_ColourRule(hand, card) && canBePlayed_HeartsRule(hand, card)
+                && canBePlayed_FirstRoundRule(hand, card);
+    }
+
+    private boolean canBePlayed_ColourRule(Hand hand, Card card) {
+        if (Arrays.stream(pool).noneMatch(cardInPool -> cardInPool != null)) {
+            return true;
+        } else if (pool[currentPlayer.getId()].getColour().equals(card.getColour())) {
+            return true;
+        } else {
+            return hand.getCards().stream()
+                    .noneMatch(cardInHand -> cardInHand.getColour().
+                            equals(pool[currentPlayer.getId()].getColour()));
+        }
+    }
+
+    private boolean canBePlayed_HeartsRule(Hand hand, Card card) {
+        if (heartsAllowed || containsOnlyOneColour(hand, CardColour.HEARTS)) {
+            return true;
+        } else {
+            return !card.getColour().equals(CardColour.HEARTS);
+        }
+    }
+
+    private boolean canBePlayed_FirstRoundRule(Hand hand, Card card) {
+        Card twoOfClubs = new Card(0);
+        if (hand.getCards().size() < 13 || containsOnlyCardsWithPoints(hand)) {
+            return true;
+        } else if (card.getColour().equals(CardColour.HEARTS) || card.getId() == 43) {
+            return false;
+        } else if (hand.getCards().contains(twoOfClubs)) {
+            return card.getId() == 0;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean containsOnlyCardsWithPoints(Hand hand) {
+        for (Card card : hand.getCards()) {
+            if (!(card.getId() == 43 || card.getColour().equals(CardColour.HEARTS))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean containsOnlyOneColour(Hand hand, CardColour colour) {
+        for (Card card : hand.getCards()) {
+            if (!(card.getColour().equals(colour))) {
+                return false;
+            }
+        }
         return true;
     }
 

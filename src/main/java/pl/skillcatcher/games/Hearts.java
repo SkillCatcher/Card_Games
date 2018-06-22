@@ -82,14 +82,24 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
 
         System.out.println("\nPick a card: ");
         int choice = scanner.nextInt();
-        if (canBePlayed(player.getHand(), player.getHand().playACard(choice-1))) {
-            pool[player.getId()] = player.getHand().playACard(choice-1);
+        if (canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
+            pool[player.getId()] = player.getHand().playACard(choice);
         } else {
-            System.out.println("Sorry - you can't play that card. Possible reasons:"
-                    + "\na) card's colour doesn't match with color of the first card,"
-                    + "\nb) hearts still aren't allowed,"
-                    + "\nc) it's first deal - it has to start with Two of Clubs and " +
-                    "cards with points are not allowed.");
+            System.out.println("Sorry - you can't play that card, because:");
+            if (!canBePlayed_ColourRule(player.getHand(), player.getHand().getACard(choice-1))) {
+                System.out.println("- card's colour doesn't match with color of the first card");
+            }
+
+            if (!canBePlayed_HeartsRule(player.getHand(), player.getHand().getACard(choice-1))) {
+                System.out.println("- hearts still aren't allowed");
+            }
+
+            if (!canBePlayed_FirstRoundRule(player.getHand(), player.getHand().getACard(choice-1))) {
+                System.out.println("- it's first deal: "
+                        + "\ta) it has to start with Two of Clubs"
+                        + "\tb) cards with points are not allowed");
+            }
+
             System.out.println("\nPlease choose again...");
             confirm();
             makeMove(player);
@@ -307,20 +317,24 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
     }
 
     private boolean canBePlayed_HeartsRule(Hand hand, Card card) {
-        if (heartsAllowed || containsOnlyOneColour(hand, CardColour.HEARTS)) {
-            return true;
+        if (Arrays.stream(pool).noneMatch(cardInPool -> cardInPool != null)) {
+            if (heartsAllowed || containsOnlyOneColour(hand, CardColour.HEARTS)) {
+                return true;
+            } else {
+                return !card.getColour().equals(CardColour.HEARTS);
+            }
         } else {
-            return !card.getColour().equals(CardColour.HEARTS);
+            return true;
         }
+
     }
 
     private boolean canBePlayed_FirstRoundRule(Hand hand, Card card) {
-        Card twoOfClubs = new Card(0);
         if (hand.getCards().size() < 13 || containsOnlyCardsWithPoints(hand)) {
             return true;
         } else if (card.getColour().equals(CardColour.HEARTS) || card.getId() == 43) {
             return false;
-        } else if (hand.getCards().contains(twoOfClubs)) {
+        } else if (hand.getACard(0).getId() == 0) {
             return card.getId() == 0;
         } else {
             return true;

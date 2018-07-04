@@ -135,11 +135,33 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
     }
 
     private void updatePoints() {
-        for (Player player : players) {
-            for (Card card : player.getCollectedCards()) {
-                player.addPoints(card.getValue());
+        if (has_26_Points() != null) {
+            for (Player player : players) {
+                if (!player.equals(has_26_Points())) {
+                    player.addPoints(26);
+                }
+            }
+        } else {
+            for (Player player : players) {
+                for (Card card : player.getCollectedCards()) player.addPoints(card.getValue());
             }
         }
+    }
+
+    private Player has_26_Points() {
+        for (Player player : players) {
+            int sum = 0;
+            for (Card card : player.getCollectedCards()) {
+                sum += card.getValue();
+            }
+
+            if (sum == 26) {
+                return player;
+            } else if (sum > 0) {
+                return null;
+            }
+        }
+        return null;
     }
 
     void printResults() {

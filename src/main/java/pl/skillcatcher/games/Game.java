@@ -16,5 +16,6 @@ abstract class Game {
     abstract void AI_Move();
     abstract void printResults();
     abstract void printFinalScore();
+    abstract int correctInputCheck(String message, int min, int max);
 
 }

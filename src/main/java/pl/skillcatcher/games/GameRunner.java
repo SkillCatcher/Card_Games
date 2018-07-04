@@ -1,8 +1,6 @@
 package pl.skillcatcher.games;
 
 
-import java.util.Scanner;
-
 public class GameRunner {
     public static void main(String[] args) {
 
@@ -15,9 +13,5 @@ public class GameRunner {
 
         Hearts kierki = new Hearts();
         kierki.startTheGame();
-        //kierki.printFinalScore();
-
-
-
     }
 }

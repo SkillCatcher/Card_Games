@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Scanner;
 
-public class Hearts extends Game implements Confirmable, SetPlayersNames {
+class Hearts extends Game implements Confirmable, SetPlayersNames {
     private Player[] players;
     private int currentRound;
     private Card[] pool;
@@ -23,7 +23,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         setNames(numberOfPlayers, players);
     }
 
-    public void setCardValues() {
+    void setCardValues() {
         for (int i = 0; i < 52; i++) {
             if(deck.getACard(i).getId() == 43) {
                 deck.getACard(i).setValue(13);
@@ -35,7 +35,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    public void startTheGame() {
+    void startTheGame() {
         setCardValues();
         deck.shuffle();
         while (deck.getCards().size() > 0) {
@@ -59,7 +59,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         printResults();
     }
 
-    public void currentSituation(Player player) {
+    void currentSituation(Player player) {
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
         confirm();
@@ -74,14 +74,12 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    public void makeMove(Player player) {
-        Scanner scanner = new Scanner(System.in);
-
+    void makeMove(Player player) {
         System.out.println(player.getName() + " - your hand:");
         player.getHand().displayHand();
 
-        System.out.println("\nPick a card: ");
-        int choice = scanner.nextInt();
+        int choice = correctInputCheck("\nPick a card: ", 1, player.getHand().getCards().size());
+
         if (canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
             pool[player.getId()] = player.getHand().playACard(choice);
         } else {
@@ -96,18 +94,17 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
 
             if (!canBePlayed_FirstRoundRule(player.getHand(), player.getHand().getACard(choice-1))) {
                 System.out.println("- it's first deal: "
-                        + "\ta) it has to start with Two of Clubs"
-                        + "\tb) cards with points are not allowed");
+                        + "\n\ta) it has to start with Two of Clubs"
+                        + "\n\tb) cards with points are not allowed");
             }
 
             System.out.println("\nPlease choose again...");
             confirm();
             makeMove(player);
         }
-
     }
 
-    public void AI_Move() {
+    void AI_Move() {
         //trying to figure it out...
     }
 
@@ -115,7 +112,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         System.out.println("Cards in game:");
         displayPool();
         Player winner = poolWinner();
-        System.out.println("This pool goes to " + winner.getName());
+        System.out.println("This pool goes to " + winner.getName().toUpperCase());
         confirm();
         checkForEnablingHearts();
         winner.getHand().collectCards(pool);
@@ -145,7 +142,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    public void printResults() {
+    void printResults() {
         boolean endGame = false;
         updatePoints();
         System.out.println("Points after round " + currentRound + ":");
@@ -155,7 +152,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
                 endGame = true;
             }
         }
-
+        confirm();
         if (endGame) {
             printFinalScore();
         } else {
@@ -165,10 +162,7 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    public void printFinalScore() {
-//        for (Player player : players) {
-//            player.setPoints((int)Math.floor(Math.random()*100));
-//        }
+    void printFinalScore() {
         sortPlayersByPoints();
         Player winner = players[0];
         int i = 0;
@@ -207,7 +201,6 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
     }
 
     private void cardPassChoice(Player player, ArrayList<Card> cardSet) {
-        Scanner scanner = new Scanner(System.in);
         final int numberOfCardsToPass = 3;
         int numberOfCardsChosen = 0;
 
@@ -221,8 +214,8 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
                 }
             }
 
-            System.out.println("Choose card number " + (numberOfCardsChosen+1) + ":");
-            int choice = scanner.nextInt();
+            int choice = correctInputCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
+                        1, 13);
 
             for (int i = 0; i < numberOfCardsChosen; i++) {
                 if (cardSet.get(i).equals(player.getCard(choice-1))) {
@@ -374,6 +367,27 @@ public class Hearts extends Game implements Confirmable, SetPlayersNames {
         deck = new Deck();
         for (Player player : players) {
             player.setHand(new Hand());
+        }
+    }
+
+    int correctInputCheck(String message, int min, int max) {
+        System.out.println(message);
+        Scanner scanner = new Scanner(System.in);
+        if (scanner.hasNextInt()) {
+            int choice = scanner.nextInt();
+
+            if (choice > max || choice < min) {
+                System.out.println("\nIncorrect number - please choose a number between "
+                        + min + " and " + max + ":\n");
+                return correctInputCheck(message, min, max);
+            } else {
+                return choice;
+            }
+
+        } else {
+            System.out.println("\nIncorrect input - please choose a NUMBER between "
+                    + min + " and " + max + ":\n");
+            return correctInputCheck(message, min, max);
         }
     }
 }

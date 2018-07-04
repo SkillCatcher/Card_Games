@@ -175,4 +175,9 @@ public class BlackJack extends Game implements Confirmable {
                 "\n \n" +
                 winner + " WINS THE GAME!!!");
     }
+
+    @Override
+    int correctInputCheck(String message, int min, int max) {
+        return 0;
+    }
 }

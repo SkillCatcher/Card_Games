@@ -11,7 +11,12 @@ public class GameRunner {
 //        BlackJack game = new BlackJack(rounds);
 //        game.startTheGame();
 
-        Hearts kierki = new Hearts();
+        Hearts kierki = new Hearts(0);
         kierki.startTheGame();
+
     }
 }
+
+//TODO: After finishing all Blackjack an Hearts tests, move GameRunner to separate package
+
+//TODO: Update Blackjack

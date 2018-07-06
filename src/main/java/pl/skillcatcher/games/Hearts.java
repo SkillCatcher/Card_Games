@@ -2,10 +2,7 @@ package pl.skillcatcher.games;
 
 import pl.skillcatcher.cards.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Scanner;
+import java.util.*;
 
 class Hearts extends Game implements Confirmable, SetPlayersNames {
     private Player[] players;
@@ -13,14 +10,15 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
     private Card[] pool;
     private boolean heartsAllowed;
 
-    Hearts() {
+    Hearts(int numberOfHumanPlayers) {
+        this.numberOfAllPlayers = 4;
         this.heartsAllowed = false;
-        this.numberOfPlayers = 4;
+        this.numberOfHumanPlayers = numberOfHumanPlayers;
         this.deck = new Deck();
         this.currentRound = 1;
-        this.pool = new Card[4];
-        this.players = new Player[4];
-        setNames(numberOfPlayers, players);
+        this.pool = new Card[numberOfAllPlayers];
+        this.players = new Player[numberOfAllPlayers];
+        setNames(numberOfHumanPlayers, numberOfAllPlayers, players);
     }
 
     void setCardValues() {
@@ -50,11 +48,13 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
 
         currentPlayer = whoGotTwoOfClubs();
 
-        while (currentPlayer.getCards().size() > 0) {
-            for (int i = currentPlayer.getId(); i < currentPlayer.getId() + 4; i++) {
-                currentSituation(players[i%4]);
+        if (currentPlayer != null) {
+            while (currentPlayer.getCards().size() > 0) {
+                for (int i = currentPlayer.getId(); i < currentPlayer.getId() + 4; i++) {
+                    currentSituation(players[i%4]);
+                }
+                moveResult();
             }
-            moveResult();
         }
         printResults();
     }
@@ -70,7 +70,7 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
             makeMove(player);
         } else {
-            AI_Move();
+            AI_Move(player);
         }
     }
 
@@ -104,12 +104,25 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    void AI_Move() {
-        //trying to figure it out...
+    void AI_Move(Player playerAI) {
+        Hand playableCards = new Hand();
+
+        for (Card card : playerAI.getCards()) {
+            if (canBePlayed(playerAI.getHand(), card)) {
+                playableCards.getCards().add(card);
+            }
+        }
+
+        int cardIdChoice = (int)Math.floor(Math.random()*playableCards.getCards().size());
+        Card card = playableCards.getACard(cardIdChoice);
+        pool[playerAI.getId()] = card;
+        playerAI.getCards().remove(card);
     }
 
     private void moveResult() {
-        System.out.println("Cards in game:");
+        System.out.println("\nEnd of deal");
+        confirm();
+        System.out.println("\nCards in game:");
         displayPool();
         Player winner = poolWinner();
         System.out.println("This pool goes to " + winner.getName().toUpperCase());
@@ -164,6 +177,8 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         return null;
     }
 
+
+    //TODO: Update method, so that after every round points earned in THAT PARTICULAR ROUND are printed as well
     void printResults() {
         boolean endGame = false;
         updatePoints();
@@ -267,19 +282,27 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
             System.out.println("Card Pass Turn for player: " + players[i].getName());
             confirm();
 
-            System.out.println("Your hand:");
-            players[i].getHand().displayHand();
+            if (players[i].getPlayerStatus().equals(PlayerStatus.USER)) {
+                System.out.println("Your hand:");
+                players[i].getHand().displayHand();
 
-            System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
-                    "simply pick the same card again). They'll be passed to "
-                    + players[( i + gameRotation() ) % 4].getName() + ": \n");
+                System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
+                        "simply pick the same card again). They'll be passed to "
+                        + players[( i + gameRotation() ) % 4].getName() + ": \n");
 
-            cardPassChoice(players[i], cardSets.get(i));
-            printCardChoices(cardSets.get(i));
-            confirm();
+                cardPassChoice(players[i], cardSets.get(i));
+                printCardChoices(cardSets.get(i));
+                confirm();
 
-            for (Card card : cardSets.get(i)) {
-                players[i].getCards().remove(card);
+                for (Card card : cardSets.get(i)) {
+                    players[i].getCards().remove(card);
+                }
+            } else if (players[i].getPlayerStatus().equals(PlayerStatus.AI)) {
+                for (int a = 0; a < 3; a++) {
+                    Card card = players[i].getCard((int)Math.floor(Math.random()*players[i].getCards().size()));
+                    cardSets.get(i).add(card);
+                    players[i].getCards().remove(card);
+                }
             }
         }
 
@@ -333,7 +356,7 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
 
     private boolean canBePlayed_HeartsRule(Hand hand, Card card) {
         if (Arrays.stream(pool).noneMatch(cardInPool -> cardInPool != null)) {
-            if (heartsAllowed || containsOnlyOneColour(hand, CardColour.HEARTS)) {
+            if (heartsAllowed || containsOnlyHearts(hand)) {
                 return true;
             } else {
                 return !card.getColour().equals(CardColour.HEARTS);
@@ -349,11 +372,20 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
             return true;
         } else if (card.getColour().equals(CardColour.HEARTS) || card.getId() == 43) {
             return false;
-        } else if (hand.getACard(0).getId() == 0) {
+        } else if (containsTwoOfClubs(hand)) {
             return card.getId() == 0;
         } else {
             return true;
         }
+    }
+
+    private boolean containsTwoOfClubs(Hand hand) {
+        for (Card card : hand.getCards()) {
+            if (card.getId() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean containsOnlyCardsWithPoints(Hand hand) {
@@ -365,9 +397,9 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         return true;
     }
 
-    private boolean containsOnlyOneColour(Hand hand, CardColour colour) {
+    private boolean containsOnlyHearts(Hand hand) {
         for (Card card : hand.getCards()) {
-            if (!(card.getColour().equals(colour))) {
+            if (!(card.getColour().equals(CardColour.HEARTS))) {
                 return false;
             }
         }

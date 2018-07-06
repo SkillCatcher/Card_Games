@@ -81,7 +81,7 @@ public class BlackJack extends Game implements Confirmable {
             case 2:
                 System.out.println("You've finished with " + playersHand.getPoints() + " points.\n" +
                         "Now it's dealer's turn...\n");
-                AI_Move();
+                AI_Move(player);
                 break;
             default:
                 System.out.println("Wrong command - try again...\n");
@@ -90,7 +90,7 @@ public class BlackJack extends Game implements Confirmable {
         }
     }
 
-    public void AI_Move() {
+    public void AI_Move(Player player) {
         confirm();
         decreaseAceValue(dealersHand);
         System.out.println("\nDealer currently has this hand: ");
@@ -100,7 +100,7 @@ public class BlackJack extends Game implements Confirmable {
         if (dealersHand.getPoints() < 17) {
             System.out.println("Dealer draws another card...");
             deck.dealACard(dealersHand);
-            AI_Move();
+            AI_Move(player);
         } else {
             System.out.println("Dealer ends game with " + dealersHand.getPoints() + " points");
             printResults();

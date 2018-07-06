@@ -177,14 +177,17 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         return null;
     }
 
-
-    //TODO: Update method, so that after every round points earned in THAT PARTICULAR ROUND are printed as well
     void printResults() {
         boolean endGame = false;
+        int[] pointsBeforeThisRound = new int[numberOfAllPlayers];
+        for (Player player : players) {
+            pointsBeforeThisRound[player.getId()] = player.getPoints();
+        }
         updatePoints();
         System.out.println("Points after round " + currentRound + ":");
         for (int i = 0; i < players.length; i++) {
-            System.out.println((i+1) + ". " + players[i].getName() + ": " + players[i].getPoints());
+            System.out.println((i+1) + ". " + players[i].getName() + ": " + players[i].getPoints()
+                    + " (in this round: " + (players[i].getPoints() - pointsBeforeThisRound[i]) + ")");
             if (players[i].getPoints() >= 100) {
                 endGame = true;
             }
@@ -204,7 +207,7 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         Player winner = players[0];
         int i = 0;
         for (Player player : players) {
-            System.out.println((i+1) + ". " + player.getName() + ": " + player.getPoints());
+            System.out.println((i+1) + ". " + player.getName() + ": " + player.getPoints() + " points");
             i++;
         }
         System.out.println("\nWinner - " + winner.getName());

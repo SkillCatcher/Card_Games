@@ -9,6 +9,7 @@ abstract class Game {
     int numberOfHumanPlayers;
     int numberOfAllPlayers;
     Player currentPlayer;
+    Player[] players;
 
     abstract void setCardValues();
     abstract void startTheGame();
@@ -17,6 +18,5 @@ abstract class Game {
     abstract void AI_Move(Player playerAI);
     abstract void printResults();
     abstract void printFinalScore();
-    abstract int correctInputCheck(String message, int min, int max);
 
 }

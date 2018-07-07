@@ -1,11 +1,17 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.*;
+import pl.skillcatcher.cards.Card;
+import pl.skillcatcher.cards.CardColour;
+import pl.skillcatcher.cards.Deck;
+import pl.skillcatcher.cards.Hand;
+import pl.skillcatcher.cards.Player;
+import pl.skillcatcher.cards.PlayerStatus;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
-class Hearts extends Game implements Confirmable, SetPlayersNames {
-    private Player[] players;
+class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck {
     private int currentRound;
     private Card[] pool;
     private boolean heartsAllowed;
@@ -13,12 +19,13 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
     Hearts(int numberOfHumanPlayers) {
         this.numberOfAllPlayers = 4;
         this.heartsAllowed = false;
-        this.numberOfHumanPlayers = numberOfHumanPlayers;
+        this.numberOfHumanPlayers = inputWithCheck("Please choose the number of HUMAN players " +
+                "- between 0 (if you just want to watch and press enter) and 4 (all human players):", 0, 4);
         this.deck = new Deck();
         this.currentRound = 1;
         this.pool = new Card[numberOfAllPlayers];
         this.players = new Player[numberOfAllPlayers];
-        setNames(numberOfHumanPlayers, numberOfAllPlayers, players);
+        createPlayers(numberOfHumanPlayers, numberOfAllPlayers, players);
     }
 
     void setCardValues() {
@@ -78,7 +85,7 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         System.out.println(player.getName() + " - your hand:");
         player.getHand().displayHand();
 
-        int choice = correctInputCheck("\nPick a card: ", 1, player.getHand().getCards().size());
+        int choice = inputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
 
         if (canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
             pool[player.getId()] = player.getHand().playACard(choice);
@@ -254,7 +261,7 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
                 }
             }
 
-            int choice = correctInputCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
+            int choice = inputWithCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
                         1, 13);
 
             for (int i = 0; i < numberOfCardsChosen; i++) {
@@ -427,24 +434,24 @@ class Hearts extends Game implements Confirmable, SetPlayersNames {
         }
     }
 
-    int correctInputCheck(String message, int min, int max) {
-        System.out.println(message);
-        Scanner scanner = new Scanner(System.in);
-        if (scanner.hasNextInt()) {
-            int choice = scanner.nextInt();
-
-            if (choice > max || choice < min) {
-                System.out.println("\nIncorrect number - please choose a number between "
-                        + min + " and " + max + ":\n");
-                return correctInputCheck(message, min, max);
-            } else {
-                return choice;
-            }
-
-        } else {
-            System.out.println("\nIncorrect input - please choose a NUMBER between "
-                    + min + " and " + max + ":\n");
-            return correctInputCheck(message, min, max);
-        }
-    }
+//    int inputWithCheck(String message, int min, int max) {
+//        System.out.println(message);
+//        Scanner scanner = new Scanner(System.in);
+//        if (scanner.hasNextInt()) {
+//            int choice = scanner.nextInt();
+//
+//            if (choice > max || choice < min) {
+//                System.out.println("\nIncorrect number - please choose a number between "
+//                        + min + " and " + max + ":\n");
+//                return inputWithCheck(message, min, max);
+//            } else {
+//                return choice;
+//            }
+//
+//        } else {
+//            System.out.println("\nIncorrect input - please choose a NUMBER between "
+//                    + min + " and " + max + ":\n");
+//            return inputWithCheck(message, min, max);
+//        }
+//    }
 }

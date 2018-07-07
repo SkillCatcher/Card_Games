@@ -1,30 +1,28 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.CardNumber;
-import pl.skillcatcher.cards.Deck;
-import pl.skillcatcher.cards.Hand;
-import pl.skillcatcher.cards.Player;
+import pl.skillcatcher.cards.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 
-public class BlackJack extends Game implements Confirmable {
+public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectInputCheck {
 
-    private Hand playersHand;
-    private Hand dealersHand;
-    private int playersWins;
-    private int dealersWins;
     private int roundsToPlay;
 
-    BlackJack(int roundsToPlay) {
+    BlackJack() {
         this.deck = new Deck();
-        this.playersHand = new Hand();
-        this.dealersHand = new Hand();
-        this.playersWins = 0;
-        this.dealersWins = 0;
-        this.roundsToPlay = roundsToPlay;
+        this.numberOfHumanPlayers = inputWithCheck("Please choose a number of HUMAN players " +
+                "(between 1 and 7):", 1, 7);
+        this.numberOfAllPlayers = numberOfHumanPlayers + 1;
+        this.roundsToPlay = inputWithCheck("Please choose a number of rounds you want to play " +
+                "(between 1 and 100):", 1, 100);
+        this.players = new Player[numberOfAllPlayers];
+        createPlayers(numberOfHumanPlayers, numberOfAllPlayers, players);
     }
 
-    public void setCardValues() {
+    void setCardValues() {
         for (int i = 0; i < 52; i++) {
             if(i < 36) {
                 deck.getACard(i).setValue((i/4)+2);
@@ -36,148 +34,191 @@ public class BlackJack extends Game implements Confirmable {
         }
     }
 
-    public void startTheGame() {
+    void startTheGame() {
         setCardValues();
         deck.shuffle();
-        deck.dealACard(playersHand);
-        deck.dealACard(dealersHand);
-        deck.dealACard(playersHand);
-        deck.dealACard(dealersHand);
+        for (Player player : players) {
+            deck.dealACard(player.getHand());
+        }
 
+        currentPlayer = players[roundsToPlay%numberOfHumanPlayers];
         currentSituation(currentPlayer);
     }
 
-    public void currentSituation(Player player) {
-        System.out.println("You can see, that dealer's got a " + dealersHand.getACard(0).getName() + ".\n");
-        decreaseAceValue(playersHand);
+    void currentSituation(Player player) {
+        System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN\n");
+
+        displayOpponentsHands(player);
+
+        System.out.println("\nYou can see, that dealer's got a " +
+                players[numberOfHumanPlayers].getCard(0).getName() + ".\n");
+
+        decreaseAceValue(player);
 
         System.out.println("Your current hand: ");
-        playersHand.displayHand();
-        playersHand.displayPoints();
+        player.getHand().displayHand();
+        player.getHand().displayPoints();
 
-        if(playersHand.getPoints() > 21) {
-            System.out.println("Oops... your currently have " + playersHand.getPoints() +
+        if(failCheck(player)) {
+            System.out.println("Oops... your currently have " + player.getHand().getPoints() +
                     " points, which is more than 21. You've lost...");
-            printResults();
+            //printResults();
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
         } else {
             makeMove(currentPlayer);
         }
     }
 
-    public void makeMove(Player player) {
-        Scanner scanner = new Scanner(System.in);
+    private boolean failCheck(Player player) {
+        return player.getHand().getPoints() > 21;
+    }
 
-        System.out.println("Do you want a hit or do you want to stay? [Press 1 or 2, and confirm with ENTER]\n" +
+    private void decreaseAceValue(Player player) {
+        for (int i = 0; i < player.getCards().size(); i++) {
+            if (failCheck(player) && player.getCard(i).getNumber().equals(CardNumber.ACE) &&
+                    player.getCard(i).getValue() != 1) {
+                player.getCard(i).setValue(1);
+                break;
+            }
+        }
+    }
+
+    private void displayOpponentsHands(Player yourPlayer) {
+        for (Player player : players) {
+            if (!(player.equals(yourPlayer) && player.equals(players[numberOfHumanPlayers]))) {
+                System.out.println("\nHand of " + player.getName());
+                player.getHand().displayHand();
+            }
+        }
+    }
+
+    void makeMove(Player player) {
+        int choice = inputWithCheck("Do you want a hit or do you want to stay? " +
+                "[Press 1 or 2, and confirm with ENTER]\n" +
                 "1 - Hit me! (Draw another card)\n" +
-                "2 - I'm good - I'll stay (End your turn)\n");
-
-        int choice = scanner.nextInt();
+                "2 - I'm good - I'll stay (End your turn)", 1, 2);
 
         switch (choice) {
             case 1:
-                deck.dealACard(playersHand);
-                currentSituation(currentPlayer);
+                deck.dealACard(player.getHand());
+                currentSituation(currentPlayer); /////////////////NEXT PLAYER
                 break;
             case 2:
-                System.out.println("You've finished with " + playersHand.getPoints() + " points.\n" +
-                        "Now it's dealer's turn...\n");
+                System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
+                //wyłącz z gry
+                //next player
+                //jeśli nikt nie został, to tura dealera
                 AI_Move(player);
                 break;
             default:
-                System.out.println("Wrong command - try again...\n");
-                makeMove(currentPlayer);
                 break;
         }
     }
 
-    public void AI_Move(Player player) {
+    void AI_Move(Player player) {
+        System.out.println("\nDealer's turn...\n");
         confirm();
-        decreaseAceValue(dealersHand);
+        decreaseAceValue(player);
         System.out.println("\nDealer currently has this hand: ");
-        dealersHand.displayHand();
-        dealersHand.displayPoints();
+        player.getHand().displayHand();
+        player.getHand().displayPoints();
 
-        if (dealersHand.getPoints() < 17) {
+        if (player.getHand().getPoints() < 17) {
             System.out.println("Dealer draws another card...");
-            deck.dealACard(dealersHand);
+            deck.dealACard(player.getHand());
             AI_Move(player);
         } else {
-            System.out.println("Dealer ends game with " + dealersHand.getPoints() + " points");
+            System.out.println("Dealer ends game with " + player.getHand().getPoints() + " points");
             printResults();
         }
     }
 
-    public void printResults() {
+    void printResults() {
+        Player dealer = players[players.length-1];
+        ArrayList<Player> winners = new ArrayList<>();
+        System.out.println("\nResults:\n");
         confirm();
-        int playerScore = playersHand.getPoints();
-        int dealerScore = dealersHand.getPoints();
-        String winner;
-        String message;
+        System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
 
-        if( (playerScore > dealerScore && !failCheck(playersHand)) || (failCheck(dealersHand)) ) {
-            playersWins++;
-            winner = "PLAYER";
-            message = "Congratulations!!!";
-        } else if ( (dealerScore > playerScore && !failCheck(dealersHand)) || (failCheck(playersHand)) ) {
-            dealersWins++;
-            winner = "DEALER";
-            message = "Better luck next time!";
-        } else {
-            winner = "NOBODY";
-            message = "TIE GAME, Ladies ana Gentlemen!";
+        for (int i = 0; i < numberOfHumanPlayers; i++) {
+            System.out.println(players[i].getName() + ": " + players[i].getHand().getPoints() + " points");
+            if (players[i].getHand().getPoints() > dealer.getHand().getPoints()) {
+                winners.add(players[i]);
+                players[i].addPoints(1);
+            } else if (players[i].getHand().getPoints() < dealer.getHand().getPoints()) {
+                dealer.addPoints(1);
+            } else {
+                winners.add(players[i]);
+                players[i].addPoints(1);
+                dealer.addPoints(1);
+            }
         }
 
-        System.out.println("\nFinal score:\nPlayer: " + playerScore +
-                "        " + "Dealer: " + dealerScore);
-        System.out.println("\nThe winner is...  " + winner + "!!!" + "\n" + message + "\n");
+        System.out.println("Winners of this round:");
+        for (Player player : winners) {
+            System.out.println(player.getName());
+        }
+
+        System.out.println("\nPoints so far:\n");
+        int dealersPoints = dealer.getPoints() / numberOfHumanPlayers;
+        for (Player player : players) {
+            System.out.println(player.getName() + ":");
+            if (player.equals(dealer)) {
+                System.out.println(dealersPoints + "\n");
+            } else {
+                System.out.println(player.getPoints() + "\n");
+            }
+        }
+
         roundsToPlay--;
 
         if (roundsToPlay > 0) {
             System.out.println("\n" + roundsToPlay + " rounds left...");
 
             deck = new Deck();
-            playersHand = new Hand();
-            dealersHand = new Hand();
+            for (Player player : players) {
+                player.getCards().clear();
+            }
             confirm();
             startTheGame();
         } else {
             printFinalScore();
         }
-
     }
 
-    private boolean failCheck(Hand hand) {
-        return hand.getPoints() > 21;
-    }
+    void printFinalScore() {
+        confirm();
+        Player dealer = players[players.length-1];
+        dealer.setPoints(dealer.getPoints() / numberOfHumanPlayers);
 
-    private void decreaseAceValue(Hand hand) {
-        for (int i = 0; i < hand.getCards().size(); i++) {
-            if (hand.getPoints() > 21 &&
-                    hand.getACard(i).getNumber().equals(CardNumber.ACE) &&
-                    hand.getACard(i).getValue() != 1) {
-                hand.getACard(i).setValue(1);
-                break;
+        class PointsComparator implements Comparator<Player> {
+            @Override
+            public int compare(Player o1, Player o2) {
+                return Integer.compare(o2.getPoints(), o1.getPoints());
             }
         }
-    }
+        Arrays.sort(players, new PointsComparator());
 
-    public void printFinalScore() {
-        confirm();
-        String winner;
-        if(playersWins > dealersWins) {
-            winner = "PLAYER";
-        } else {
-            winner = "DEALER";
+        System.out.println("Final result:");
+        int scoreboardIndex = 1;
+        for (Player player : players) {
+            System.out.println(scoreboardIndex + ". " + player.getName() + ": " + player.getPoints() + " points");
         }
-        System.out.println("\nFinal score:" +
-                "\n  Player: " + playersWins + " wins" +
-                "\n  Dealer: " + dealersWins + " wins" +
-                "\n \n" +
-                winner + " WINS THE GAME!!!");
+
+        System.out.println("WINNER: " + players[0].getName().toUpperCase() + "!!!");
     }
 
     @Override
-    int correctInputCheck(String message, int min, int max) {
-        return 0;
+    public void createPlayers(int numberOfHumanPlayers, int numberOfAllPlayers, Player[] players) {
+        for (int i = 0; i < numberOfAllPlayers; i++) {
+            if (i < numberOfHumanPlayers) {
+                Scanner scanner = new Scanner(System.in);
+                System.out.println("Player " + (i+1) + " - name:\n");
+                String name = scanner.nextLine();
+                players[i] = new Player(name, i);
+            } else {
+                players[i] = new Player("Dealer", i, PlayerStatus.AI);
+            }
+        }
     }
 }

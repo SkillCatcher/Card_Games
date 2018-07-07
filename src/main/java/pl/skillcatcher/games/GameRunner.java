@@ -18,5 +18,3 @@ public class GameRunner {
 }
 
 //TODO: After finishing all Blackjack an Hearts tests, move GameRunner to separate package
-
-//TODO: Update Blackjack

@@ -45,7 +45,7 @@ public class Hand extends Deck {
     }
 
     public void displayPoints() {
-        System.out.println("\nCurrent points: " + getPoints() + "\n");
+        System.out.println("Current points: " + getPoints() + "\n");
     }
 
     public void collectCards(Card[] pool) {

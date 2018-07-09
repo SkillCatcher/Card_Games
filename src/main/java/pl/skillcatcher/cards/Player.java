@@ -5,11 +5,11 @@ import java.util.List;
 
 public class Player {
 
-    private String name;
+    private final String name;
     private int points;
     private Hand hand;
-    private PlayerStatus playerStatus;
-    private int id;
+    private final PlayerStatus playerStatus;
+    private final int id;
 
     public String getName() {
         return name;
@@ -35,20 +35,12 @@ public class Player {
         return playerStatus;
     }
 
-    public void setPlayerStatus(PlayerStatus playerStatus) {
-        this.playerStatus = playerStatus;
-    }
-
     public int getId() {
         return id;
     }
 
     public ArrayList<Card> getCollectedCards() {
         return this.hand.getCollectedCards();
-    }
-
-    public Player() {
-        this.playerStatus = PlayerStatus.NOT_ACTIVE;
     }
 
     public Player(String name, int id) {

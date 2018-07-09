@@ -5,21 +5,27 @@ import pl.skillcatcher.cards.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Scanner;
 
-public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectInputCheck {
+class BlackJack extends Game implements Confirmable, SetPlayers, CorrectInputCheck {
 
     private int roundsToPlay;
+    private Player dealer;
+    private ArrayList<Player> notFinishedPlayers;
+    private ArrayList<Player> listOfPlayersToRemove;
 
     BlackJack() {
         this.deck = new Deck();
-        this.numberOfHumanPlayers = inputWithCheck("Please choose a number of HUMAN players " +
+        this.numberOfHumanPlayers = inputWithCheck("Please choose a number of players " +
                 "(between 1 and 7):", 1, 7);
-        this.numberOfAllPlayers = numberOfHumanPlayers + 1;
+        this.numberOfAllPlayers = numberOfHumanPlayers;
         this.roundsToPlay = inputWithCheck("Please choose a number of rounds you want to play " +
                 "(between 1 and 100):", 1, 100);
         this.players = new Player[numberOfAllPlayers];
         createPlayers(numberOfHumanPlayers, numberOfAllPlayers, players);
+
+        dealer = new Player("Dealer", -1, PlayerStatus.AI);
+        notFinishedPlayers = new ArrayList<>();
+        listOfPlayersToRemove = new ArrayList<>();
     }
 
     void setCardValues() {
@@ -39,19 +45,45 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
         deck.shuffle();
         for (Player player : players) {
             deck.dealACard(player.getHand());
+            deck.dealACard(player.getHand());
         }
+        deck.dealACard(dealer.getHand());
+        deck.dealACard(dealer.getHand());
 
         currentPlayer = players[roundsToPlay%numberOfHumanPlayers];
-        currentSituation(currentPlayer);
+        addToListFromCurrentPlayer(players, notFinishedPlayers, currentPlayer);
+
+
+        while (notFinishedPlayers.size() > 0) {
+            for (Player player : notFinishedPlayers) {
+                currentSituation(player);
+            }
+            removePlayersFromList(notFinishedPlayers, listOfPlayersToRemove);
+        }
+        System.out.println("\nDealer's turn...\n");
+        AI_Move(dealer);
+    }
+
+    private void addToListFromCurrentPlayer(Player[] allPlayers, ArrayList<Player> list, Player current) {
+        for (int i = current.getId(); i < allPlayers.length + current.getId(); i++) {
+            list.add(allPlayers[i % allPlayers.length]);
+        }
+    }
+
+    private void removePlayersFromList(ArrayList<Player> biggerList, ArrayList<Player> smallerList) {
+        for (Player player : smallerList) {
+            biggerList.remove(player);
+        }
     }
 
     void currentSituation(Player player) {
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN\n");
+        confirm();
 
         displayOpponentsHands(player);
 
-        System.out.println("\nYou can see, that dealer's got a " +
-                players[numberOfHumanPlayers].getCard(0).getName() + ".\n");
+        System.out.println("You can see, that dealer's got a " +
+                dealer.getCard(0).getName() + ".\n");
 
         decreaseAceValue(player);
 
@@ -62,10 +94,10 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
         if(failCheck(player)) {
             System.out.println("Oops... your currently have " + player.getHand().getPoints() +
                     " points, which is more than 21. You've lost...");
-            //printResults();
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            listOfPlayersToRemove.add(player);
         } else {
-            makeMove(currentPlayer);
+            makeMove(player);
         }
     }
 
@@ -85,9 +117,10 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
 
     private void displayOpponentsHands(Player yourPlayer) {
         for (Player player : players) {
-            if (!(player.equals(yourPlayer) && player.equals(players[numberOfHumanPlayers]))) {
-                System.out.println("\nHand of " + player.getName());
+            if (!player.equals(yourPlayer)) {
+                System.out.println("Hand of " + player.getName());
                 player.getHand().displayHand();
+                player.getHand().displayPoints();
             }
         }
     }
@@ -101,14 +134,11 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
         switch (choice) {
             case 1:
                 deck.dealACard(player.getHand());
-                currentSituation(currentPlayer); /////////////////NEXT PLAYER
                 break;
             case 2:
                 System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
-                //wyłącz z gry
-                //next player
-                //jeśli nikt nie został, to tura dealera
-                AI_Move(player);
+                confirm();
+                listOfPlayersToRemove.add(player);
                 break;
             default:
                 break;
@@ -116,7 +146,6 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
     }
 
     void AI_Move(Player player) {
-        System.out.println("\nDealer's turn...\n");
         confirm();
         decreaseAceValue(player);
         System.out.println("\nDealer currently has this hand: ");
@@ -134,27 +163,30 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
     }
 
     void printResults() {
-        Player dealer = players[players.length-1];
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
         confirm();
         System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
 
-        for (int i = 0; i < numberOfHumanPlayers; i++) {
-            System.out.println(players[i].getName() + ": " + players[i].getHand().getPoints() + " points");
-            if (players[i].getHand().getPoints() > dealer.getHand().getPoints()) {
-                winners.add(players[i]);
-                players[i].addPoints(1);
-            } else if (players[i].getHand().getPoints() < dealer.getHand().getPoints()) {
+        for (Player player : players) {
+            System.out.println(player.getName() + ": " + player.getHand().getPoints() + " points");
+
+            if ( !failCheck(player) &&
+                    (player.getHand().getPoints() > dealer.getHand().getPoints() || failCheck(dealer)) ) {
+                winners.add(player);
+                player.addPoints(1);
+            } else if ( !failCheck(dealer) &&
+                    (player.getHand().getPoints() < dealer.getHand().getPoints() || failCheck(player)) ) {
                 dealer.addPoints(1);
-            } else {
-                winners.add(players[i]);
-                players[i].addPoints(1);
+            } else if (player.getHand().getPoints() == dealer.getHand().getPoints() && !failCheck(player)
+                    && !failCheck(dealer)){
+                winners.add(player);
+                player.addPoints(1);
                 dealer.addPoints(1);
             }
         }
 
-        System.out.println("Winners of this round:");
+        System.out.println("\nWinners of this round:");
         for (Player player : winners) {
             System.out.println(player.getName());
         }
@@ -162,13 +194,9 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
         System.out.println("\nPoints so far:\n");
         int dealersPoints = dealer.getPoints() / numberOfHumanPlayers;
         for (Player player : players) {
-            System.out.println(player.getName() + ":");
-            if (player.equals(dealer)) {
-                System.out.println(dealersPoints + "\n");
-            } else {
-                System.out.println(player.getPoints() + "\n");
-            }
+            System.out.println(player.getName() + ": " + player.getPoints() + " points");
         }
+        System.out.println("\nDealers points: " + dealersPoints);
 
         roundsToPlay--;
 
@@ -179,6 +207,9 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
             for (Player player : players) {
                 player.getCards().clear();
             }
+            dealer.getCards().clear();
+            notFinishedPlayers.clear();
+            listOfPlayersToRemove.clear();
             confirm();
             startTheGame();
         } else {
@@ -187,8 +218,8 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
     }
 
     void printFinalScore() {
+        System.out.println("Final result:");
         confirm();
-        Player dealer = players[players.length-1];
         dealer.setPoints(dealer.getPoints() / numberOfHumanPlayers);
 
         class PointsComparator implements Comparator<Player> {
@@ -199,26 +230,19 @@ public class BlackJack extends Game implements Confirmable, SetPlayers, CorrectI
         }
         Arrays.sort(players, new PointsComparator());
 
-        System.out.println("Final result:");
         int scoreboardIndex = 1;
         for (Player player : players) {
             System.out.println(scoreboardIndex + ". " + player.getName() + ": " + player.getPoints() + " points");
+            scoreboardIndex++;
         }
 
-        System.out.println("WINNER: " + players[0].getName().toUpperCase() + "!!!");
-    }
+        System.out.println("\nDealers points: " + (dealer.getPoints() / numberOfHumanPlayers));
 
-    @Override
-    public void createPlayers(int numberOfHumanPlayers, int numberOfAllPlayers, Player[] players) {
-        for (int i = 0; i < numberOfAllPlayers; i++) {
-            if (i < numberOfHumanPlayers) {
-                Scanner scanner = new Scanner(System.in);
-                System.out.println("Player " + (i+1) + " - name:\n");
-                String name = scanner.nextLine();
-                players[i] = new Player(name, i);
-            } else {
-                players[i] = new Player("Dealer", i, PlayerStatus.AI);
-            }
+        Player winner = players[0];
+        if (dealer.getPoints() > winner.getPoints()) {
+            winner = dealer;
         }
+
+        System.out.println("\nWINNER: " + winner.getName().toUpperCase() + "!!!");
     }
 }

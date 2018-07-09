@@ -16,7 +16,7 @@ class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck 
     private Card[] pool;
     private boolean heartsAllowed;
 
-    Hearts(int numberOfHumanPlayers) {
+    Hearts() {
         this.numberOfAllPlayers = 4;
         this.heartsAllowed = false;
         this.numberOfHumanPlayers = inputWithCheck("Please choose the number of HUMAN players " +
@@ -433,25 +433,4 @@ class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck 
             player.setHand(new Hand());
         }
     }
-
-//    int inputWithCheck(String message, int min, int max) {
-//        System.out.println(message);
-//        Scanner scanner = new Scanner(System.in);
-//        if (scanner.hasNextInt()) {
-//            int choice = scanner.nextInt();
-//
-//            if (choice > max || choice < min) {
-//                System.out.println("\nIncorrect number - please choose a number between "
-//                        + min + " and " + max + ":\n");
-//                return inputWithCheck(message, min, max);
-//            } else {
-//                return choice;
-//            }
-//
-//        } else {
-//            System.out.println("\nIncorrect input - please choose a NUMBER between "
-//                    + min + " and " + max + ":\n");
-//            return inputWithCheck(message, min, max);
-//        }
-//    }
 }

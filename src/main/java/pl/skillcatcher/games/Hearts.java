@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck {
+class Hearts extends Game implements Confirmable, PlayersCreator, CorrectIntInputCheck {
     private int currentRound;
     private Card[] pool;
     private boolean heartsAllowed;
@@ -19,7 +19,7 @@ class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck 
     Hearts() {
         this.numberOfAllPlayers = 4;
         this.heartsAllowed = false;
-        this.numberOfHumanPlayers = inputWithCheck("Please choose the number of HUMAN players " +
+        this.numberOfHumanPlayers = intInputWithCheck("Please choose the number of HUMAN players " +
                 "- between 0 (if you just want to watch and press enter) and 4 (all human players):", 0, 4);
         this.deck = new Deck();
         this.currentRound = 1;
@@ -85,7 +85,7 @@ class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck 
         System.out.println(player.getName() + " - your hand:");
         player.getHand().displayHand();
 
-        int choice = inputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
+        int choice = intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
 
         if (canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
             pool[player.getId()] = player.getHand().playACard(choice);
@@ -261,7 +261,7 @@ class Hearts extends Game implements Confirmable, SetPlayers, CorrectInputCheck 
                 }
             }
 
-            int choice = inputWithCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
+            int choice = intInputWithCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
                         1, 13);
 
             for (int i = 0; i < numberOfCardsChosen; i++) {

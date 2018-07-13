@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-class BlackJack extends Game implements Confirmable, SetPlayers, CorrectInputCheck {
+class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntInputCheck {
 
     private int roundsToPlay;
     private Player dealer;
@@ -15,10 +15,10 @@ class BlackJack extends Game implements Confirmable, SetPlayers, CorrectInputChe
 
     BlackJack() {
         this.deck = new Deck();
-        this.numberOfHumanPlayers = inputWithCheck("Please choose a number of players " +
+        this.numberOfHumanPlayers = intInputWithCheck("Please choose a number of players " +
                 "(between 1 and 7):", 1, 7);
         this.numberOfAllPlayers = numberOfHumanPlayers;
-        this.roundsToPlay = inputWithCheck("Please choose a number of rounds you want to play " +
+        this.roundsToPlay = intInputWithCheck("Please choose a number of rounds you want to play " +
                 "(between 1 and 100):", 1, 100);
         this.players = new Player[numberOfAllPlayers];
         createPlayers(numberOfHumanPlayers, numberOfAllPlayers, players);
@@ -126,7 +126,7 @@ class BlackJack extends Game implements Confirmable, SetPlayers, CorrectInputChe
     }
 
     void makeMove(Player player) {
-        int choice = inputWithCheck("Do you want a hit or do you want to stay? " +
+        int choice = intInputWithCheck("Do you want a hit or do you want to stay? " +
                 "[Press 1 or 2, and confirm with ENTER]\n" +
                 "1 - Hit me! (Draw another card)\n" +
                 "2 - I'm good - I'll stay (End your turn)", 1, 2);

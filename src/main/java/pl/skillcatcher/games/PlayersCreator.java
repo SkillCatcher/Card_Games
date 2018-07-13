@@ -5,7 +5,7 @@ import pl.skillcatcher.cards.PlayerStatus;
 
 import java.util.Scanner;
 
-public interface SetPlayers {
+public interface PlayersCreator {
     default void createPlayers(int numberOfHumanPlayers, int numberOfAllPlayers, Player[] players) {
         for (int i = 0; i < numberOfAllPlayers; i++) {
             if (i < numberOfHumanPlayers) {

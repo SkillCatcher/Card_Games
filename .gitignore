@@ -32,7 +32,11 @@ hs_err_pid*
 /.idea/workspace.xml
 /Card_Games.iml
 /.idea/libraries/Maven__junit_junit_4_12.xml
+/.idea/libraries/Maven__net_bytebuddy_byte_buddy_1_7_9.xml
+/.idea/libraries/Maven__net_bytebuddy_byte_buddy_agent_1_7_9.xml
 /.idea/libraries/Maven__org_hamcrest_hamcrest_core_1_3.xml
+/.idea/libraries/Maven__org_mockito_mockito_core_2_12_0.xml
+/.idea/libraries/Maven__org_objenesis_objenesis_2_6.xml
 /.idea/uiDesigner.xml
 /.idea/kotlinc.xml
 /.idea/sonarSettings.xml

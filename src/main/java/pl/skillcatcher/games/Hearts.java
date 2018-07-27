@@ -7,16 +7,29 @@ import pl.skillcatcher.cards.Hand;
 import pl.skillcatcher.cards.Player;
 import pl.skillcatcher.cards.PlayerStatus;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-class Hearts extends Game implements Confirmable, PlayersCreator, CorrectIntInputCheck {
+class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, CorrectIntInputCheck {
     private int currentRound;
     private Card[] pool;
     private boolean heartsAllowed;
 
-    Hearts(String[] x) {
+    public final String DB_NAME = "heartsResults.db";
+    public final String CONNECTION_STRING = "jdbc:h2:/C:/Users/SkillCatcher/IdeaProjects/Card_Games/" + DB_NAME;
+
+    public final String COLUMN_ROUND = "Round";
+    public final String COLUMN_PLAYER_1;
+    public final String COLUMN_PLAYER_2;
+    public final String COLUMN_PLAYER_3;
+    public final String COLUMN_PLAYER_4;
+
+    Hearts() {
         setNumberOfAllPlayers(4);
         this.heartsAllowed = false;
         setNumberOfHumanPlayers(intInputWithCheck("Please choose the number of HUMAN players " +
@@ -25,7 +38,12 @@ class Hearts extends Game implements Confirmable, PlayersCreator, CorrectIntInpu
         this.currentRound = 1;
         this.pool = new Card[getNumberOfAllPlayers()];
         setPlayers(new Player[getNumberOfAllPlayers()]);
-        createPlayers(getPlayers(), x); //setNames(getNumberOfHumanPlayers())
+        createPlayers(getPlayers(), setNames(getNumberOfHumanPlayers()));
+
+        COLUMN_PLAYER_1 = getPlayers()[0].getName();
+        COLUMN_PLAYER_2 = getPlayers()[1].getName();
+        COLUMN_PLAYER_3 = getPlayers()[2].getName();
+        COLUMN_PLAYER_4 = getPlayers()[3].getName();
     }
 
     void setCardValues() {
@@ -40,8 +58,17 @@ class Hearts extends Game implements Confirmable, PlayersCreator, CorrectIntInpu
         }
     }
 
-    @Override
     void setUpGame() {
+        try {
+            Connection connection = DriverManager.getConnection(CONNECTION_STRING);
+            Statement statement = connection.createStatement();
+
+
+
+        } catch (SQLException e) {
+            System.out.println("Error - " + e.getMessage());
+        }
+
         setCardValues();
         getDeck().shuffle();
         while (getDeck().getCards().size() > 0) {

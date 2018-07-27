@@ -26,28 +26,25 @@ public class Deck {
         }
     }
 
-    Deck(int firstCardId, int lastCardId) {
-        for (int i = firstCardId; i < lastCardId+1; i++) {
-            cards.add(new Card(i));
+    public Deck(int firstCardId, int lastCardId) throws IllegalArgumentException {
+        if (firstCardId > -1 && lastCardId < 52) {
+            for (int i = firstCardId; i < lastCardId+1; i++) {
+                cards.add(new Card(i));
+            }
+        } else {
+            throw new IllegalArgumentException();
         }
+
     }
 
-    public Deck(List<Integer> customDeck) {
-        for (Integer integer : customDeck) {
-            cards.add(new Card(customDeck.get(integer)));
+    public void dealACard(Hand hand) throws NullPointerException {
+        if (cards.size() > 0) {
+            Card topCard = cards.get(0);
+            cards.remove(0);
+            hand.getCards().add(topCard);
+        } else {
+            throw new NullPointerException("Error - card not found");
         }
-    }
-
-    public Deck(int[] customDeck) {
-        for (int i : customDeck) {
-            cards.add(new Card(i));
-        }
-    }
-
-    public void dealACard(Hand hand) {
-        Card topCard = cards.get(0);
-        cards.remove(0);
-        hand.getCards().add(topCard);
     }
 
     public void shuffle() {

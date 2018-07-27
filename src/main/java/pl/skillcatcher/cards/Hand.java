@@ -55,12 +55,8 @@ public class Hand extends Deck {
         }
     }
 
-    public void collectCards(Card card) {
-        collectedCards.add(card);
-    }
-
     public void clearCollectedCards() {
-        collectedCards = new ArrayList<>();
+        collectedCards.clear();
     }
 
     private void sortCardsById() {

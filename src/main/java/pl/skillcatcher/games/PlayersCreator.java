@@ -3,18 +3,13 @@ package pl.skillcatcher.games;
 import pl.skillcatcher.cards.Player;
 import pl.skillcatcher.cards.PlayerStatus;
 
-import java.util.Scanner;
-
 public interface PlayersCreator {
-    default void createPlayers(int numberOfHumanPlayers, int numberOfAllPlayers, Player[] players) {
-        for (int i = 0; i < numberOfAllPlayers; i++) {
-            if (i < numberOfHumanPlayers) {
-                Scanner scanner = new Scanner(System.in);
-                System.out.println("Player " + (i+1) + " - name:\n");
-                String name = scanner.nextLine();
-                players[i] = new Player(name, i);
+    default void createPlayers(Player[] players, String[] names) {
+        for (int i = 0; i < players.length; i++) {
+            if (i < names.length) {
+                players[i] = new Player(names[i], i);
             } else {
-                players[i] = new Player("A.I. #" + (i+1-numberOfHumanPlayers), i, PlayerStatus.AI);
+                players[i] = new Player("A.I. #" + (i+1-names.length), i, PlayerStatus.AI);
             }
         }
     }

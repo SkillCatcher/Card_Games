@@ -8,12 +8,16 @@ public class Card {
     private CardNumber number;
     private CardColour colour;
 
-    public Card(int id) {
-        this.name = determineNumber(id) + " of " + determineColour(id);
-        this.value = 0;
-        this.id = id;
-        setNumber(id);
-        setColour(id);
+    Card(int id) throws IllegalArgumentException {
+        if (id < 52 && id > -1) {
+            this.name = determineNumber(id) + " of " + determineColour(id);
+            this.value = 0;
+            this.id = id;
+            setNumber(id);
+            setColour(id);
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     public String getName() {

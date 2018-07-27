@@ -12,9 +12,7 @@ import java.sql.Statement;
 
 public class GameRunner implements Confirmable, CorrectIntInputCheck {
     public static void main(String[] args) {
-        //MainMenu cardGame = new MainMenu();
-        Hearts hearts = new Hearts();
-        hearts.setUpGame();
+        MainMenu cardGame = new MainMenu();
     }
 }
 

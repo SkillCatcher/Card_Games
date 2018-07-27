@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, CorrectIntInputCheck {
+public class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, CorrectIntInputCheck {
     private int currentRound;
     private Card[] pool;
     private boolean heartsAllowed;
@@ -23,13 +23,15 @@ class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, Co
     public final String DB_NAME = "heartsResults.db";
     public final String CONNECTION_STRING = "jdbc:h2:/C:/Users/SkillCatcher/IdeaProjects/Card_Games/" + DB_NAME;
 
+    public final String TABLE_LAST_PLAYED_GAME = "HeartsGame";
+
     public final String COLUMN_ROUND = "Round";
     public final String COLUMN_PLAYER_1;
     public final String COLUMN_PLAYER_2;
     public final String COLUMN_PLAYER_3;
     public final String COLUMN_PLAYER_4;
 
-    Hearts() {
+    public Hearts() {
         setNumberOfAllPlayers(4);
         this.heartsAllowed = false;
         setNumberOfHumanPlayers(intInputWithCheck("Please choose the number of HUMAN players " +
@@ -58,15 +60,27 @@ class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, Co
         }
     }
 
-    void setUpGame() {
-        try {
-            Connection connection = DriverManager.getConnection(CONNECTION_STRING);
-            Statement statement = connection.createStatement();
+    public void setUpGame() {
+        if (currentRound == 1) {
+            try {
+                Connection connection = DriverManager.getConnection(CONNECTION_STRING);
+                Statement statement = connection.createStatement();
 
+                statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_LAST_PLAYED_GAME + " ("
+                        + COLUMN_ROUND + " int, "
+                        + COLUMN_PLAYER_1 + " int, "
+                        + COLUMN_PLAYER_2 + " int, "
+                        + COLUMN_PLAYER_3 + " int, "
+                        + COLUMN_PLAYER_4 + " int)"
+                );
 
+                statement.close();
+                connection.close();
 
-        } catch (SQLException e) {
-            System.out.println("Error - " + e.getMessage());
+            } catch (SQLException e) {
+                System.out.println("Error - " + e.getMessage());
+                e.printStackTrace();
+            }
         }
 
         setCardValues();
@@ -231,6 +245,14 @@ class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, Co
                 endGame = true;
             }
         }
+
+
+        //                statement.execute("INSERT INTO " + TABLE_LAST_PLAYED_GAME + " ("
+//                        + COLUMN_ROUND + ", " + COLUMN_PLAYER_1 + ", " + COLUMN_PLAYER_2 + ", " + COLUMN_PLAYER_3 + ", "
+//                        + COLUMN_PLAYER_4 + ") VALUES (" + currentRound + ", 784, 772, 343, 127)");
+
+
+
         confirm();
         if (endGame) {
             printFinalScore();
@@ -250,6 +272,11 @@ class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, Co
             i++;
         }
         System.out.println("\nWinner - " + winner.getName());
+
+
+
+
+        //statement.execute("DELETE TABLE IF EXISTS " + TABLE_LAST_PLAYED_GAME);
     }
 
     private void sortPlayersByPoints() {

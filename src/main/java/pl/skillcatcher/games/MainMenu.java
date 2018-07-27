@@ -31,8 +31,7 @@ public class MainMenu implements CorrectIntInputCheck, Confirmable, NameSetter {
             case 2:
                 System.out.println("Let's play Hearts!");
                 confirm();
-                String[] x = {}; //to correction
-                Hearts hearts = new Hearts(x);
+                Hearts hearts = new Hearts();
                 hearts.startTheGame();
                 break;
             default:

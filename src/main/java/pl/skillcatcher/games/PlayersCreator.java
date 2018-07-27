@@ -9,7 +9,7 @@ public interface PlayersCreator {
             if (i < names.length) {
                 players[i] = new Player(names[i], i);
             } else {
-                players[i] = new Player("A.I. #" + (i+1-names.length), i, PlayerStatus.AI);
+                players[i] = new Player("AI_" + (i+1-names.length), i, PlayerStatus.AI);
             }
         }
     }

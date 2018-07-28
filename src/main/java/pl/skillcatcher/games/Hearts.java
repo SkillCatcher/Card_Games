@@ -20,7 +20,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
     public final String DB_NAME = "heartsResults.db";
     public final String CONNECTION_STRING = "jdbc:h2:/C:/Users/SkillCatcher/IdeaProjects/Card_Games/" + DB_NAME;
 
-    public final String TABLE_CURRENT_GAME = "HeartsGame";
+    public final String TABLE_CURRENT_HEARTS_GAME = "HeartsGame";
 
     public final String COLUMN_ROUND = "Round";
     public final String COLUMN_PLAYER_1;
@@ -63,9 +63,9 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
                 Connection connection = DriverManager.getConnection(CONNECTION_STRING);
                 Statement statement = connection.createStatement();
 
-                statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
+                statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_HEARTS_GAME);
 
-                statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_GAME + " ("
+                statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_HEARTS_GAME + " ("
                         + COLUMN_ROUND + " int, "
                         + COLUMN_PLAYER_1 + " int, "
                         + COLUMN_PLAYER_2 + " int, "
@@ -249,13 +249,13 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
             Connection connection = DriverManager.getConnection(CONNECTION_STRING);
             Statement statement = connection.createStatement();
 
-            statement.execute("INSERT INTO " + TABLE_CURRENT_GAME + " ("
+            statement.execute("INSERT INTO " + TABLE_CURRENT_HEARTS_GAME + " ("
                     + COLUMN_ROUND + ", " + COLUMN_PLAYER_1 + ", " + COLUMN_PLAYER_2 + ", " + COLUMN_PLAYER_3 + ", "
                     + COLUMN_PLAYER_4 + ") VALUES (" + currentRound + ", " + getPlayers()[0].getPoints() + ", "
                     + getPlayers()[1].getPoints() + ", " + getPlayers()[2].getPoints() + ", "
                     + getPlayers()[3].getPoints() + ")");
 
-            ResultSet roundsPlayed = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_GAME);
+            ResultSet roundsPlayed = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_HEARTS_GAME);
             System.out.println(COLUMN_ROUND + ":\t" + COLUMN_PLAYER_1 + ":\t" + COLUMN_PLAYER_2 + ":\t"
                     + COLUMN_PLAYER_3 + ":\t" + COLUMN_PLAYER_4 + ":");
 
@@ -288,20 +288,6 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
     }
 
     void printFinalScore() {
-//        try {
-//            Connection connection = DriverManager.getConnection(CONNECTION_STRING);
-//            Statement statement = connection.createStatement();
-//
-//            statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
-//
-//            statement.close();
-//            connection.close();
-//
-//        } catch (SQLException e) {
-//            System.out.println("Error - " + e.getMessage());
-//            e.printStackTrace();
-//        }
-
         sortPlayersByPoints();
         Player winner = getPlayers()[0];
         int i = 0;

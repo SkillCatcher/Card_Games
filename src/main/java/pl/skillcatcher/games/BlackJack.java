@@ -21,7 +21,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         this.roundsToPlay = roundsToPlay;
     }
 
-    public Player getDealer() {
+    Player getDealer() {
         return dealer;
     }
 
@@ -29,7 +29,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         this.dealer = dealer;
     }
 
-    public ArrayList<Player> getNotFinishedPlayers() {
+    ArrayList<Player> getNotFinishedPlayers() {
         return notFinishedPlayers;
     }
 
@@ -183,13 +183,13 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
     }
 
     void virtualPlayerMove(Player player) {
-        //confirm();
-        //decreaseAceValue(player);
-        //System.out.println("\nDealer currently has this hand: ");
+        confirm();
+        decreaseAceValue(player);
+        System.out.println("\nDealer currently has this hand: ");
         player.getHand().displayHand();
         player.getHand().displayPoints();
 
-        //virtualPlayerDecision(player, player.getHand().getPoints());
+        virtualPlayerDecision(player, player.getHand().getPoints());
     }
 
     private void virtualPlayerDecision(Player player, int playerPoints) {
@@ -207,10 +207,22 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
         confirm();
+
+
+
+
+
+        ///////////////////////////////////////////////////////////////////
         System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
 
         for (Player player : getPlayers()) {
             System.out.println(player.getName() + ": " + player.getHand().getPoints() + " points");
+            /////////////////////////////////////////////////////////////////////////////////
+
+            //INSERT VALUES
+
+
+
 
             if ( !failCheck(player) &&
                     (player.getHand().getPoints() > dealer.getHand().getPoints() || failCheck(dealer)) ) {
@@ -232,14 +244,30 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
             System.out.println(player.getName());
         }
 
+
+
+
+
+        /////////////////////////////////////////////////////////////////////////////////////
         System.out.println("\nPoints so far:\n");
         int dealersPoints = dealer.getPoints() / getNumberOfHumanPlayers();
         for (Player player : getPlayers()) {
             System.out.println(player.getName() + ": " + player.getPoints() + " points");
         }
         System.out.println("\nDealers points: " + dealersPoints);
+        /////////////////////////////////////////////////////////////////////////////////////
 
-        roundsToPlay--;
+        //SELECT TABLE
+
+
+
+
+
+
+
+
+
+        roundsToPlay--; // save initial value to display round number in database
 
         if (roundsToPlay > 0) {
             System.out.println("\n" + roundsToPlay + " rounds left...");
@@ -285,5 +313,8 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
 
         System.out.println("\nWINNER: " + winner.getName().toUpperCase() + "!!!");
+
+
+        //////////// CLOSE DATABASE CONNECTION
     }
 }

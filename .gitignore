@@ -41,6 +41,7 @@ hs_err_pid*
 /.idea/kotlinc.xml
 /.idea/sonarSettings.xml
 .idea/inspectionProfiles/
+/.idea/
 src/main/java/pl/skillcatcher/exceptions/
 src/main/resources/
 src/test/

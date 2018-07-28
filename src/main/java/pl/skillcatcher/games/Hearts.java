@@ -115,11 +115,11 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
         confirm();
-        System.out.println("Cards in the game so far:");
-        displayPool();
-        confirm();
 
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
+            System.out.println("Cards in the game so far:");
+            displayPool();
+            confirm();
             makeMove(player);
         } else {
             virtualPlayerMove(player);
@@ -240,7 +240,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         for (int i = 0; i < getPlayers().length; i++) {
             System.out.println((i+1) + ". " + getPlayers()[i].getName() + ": " + getPlayers()[i].getPoints()
                     + " (in this round: " + (getPlayers()[i].getPoints() - pointsBeforeThisRound[i]) + ")");
-            if (getPlayers()[i].getPoints() >= 2) {
+            if (getPlayers()[i].getPoints() >= 100) {
                 endGame = true;
             }
         }

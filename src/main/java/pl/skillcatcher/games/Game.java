@@ -6,6 +6,7 @@ import pl.skillcatcher.cards.Player;
 abstract class Game {
 
     private Deck deck;
+    private int currentRound;
     private int numberOfHumanPlayers;
     private int numberOfAllPlayers;
     private Player currentPlayer;
@@ -17,6 +18,14 @@ abstract class Game {
 
     public void setDeck(Deck deck) {
         this.deck = deck;
+    }
+
+    public int getCurrentRound() {
+        return currentRound;
+    }
+
+    public void setCurrentRound(int currentRound) {
+        this.currentRound = currentRound;
     }
 
     public int getNumberOfHumanPlayers() {

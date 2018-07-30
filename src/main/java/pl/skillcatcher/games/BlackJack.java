@@ -1,7 +1,12 @@
 package pl.skillcatcher.games;
 
 import pl.skillcatcher.cards.*;
+import pl.skillcatcher.databases.BlackjackDB;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,6 +17,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
     private Player dealer;
     private ArrayList<Player> notFinishedPlayers;
     private ArrayList<Player> listOfPlayersToRemove;
+    private BlackjackDB db;
 
     public int getRoundsToPlay() {
         return roundsToPlay;
@@ -50,6 +56,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         setNumberOfHumanPlayers(numberOfHumanPlayers);
         setNumberOfAllPlayers(getNumberOfHumanPlayers());
         this.roundsToPlay = roundsToPlay;
+        setCurrentRound(roundsToPlay - this.roundsToPlay);
         this.dealer = new Player("Dealer", -1, PlayerStatus.AI);
         this.notFinishedPlayers = new ArrayList<>();
         this.listOfPlayersToRemove = new ArrayList<>();
@@ -59,6 +66,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
                     " names) is too short for " + numberOfHumanPlayers + " players...");
         } else {
             createPlayers(getPlayers(), playersNames);
+            db = new BlackjackDB(playersNames);
         }
     }
 
@@ -74,8 +82,12 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
-    @Override
     void setUpGame() {
+        if (getCurrentRound() == 0) {
+            db.createNewTable();
+        }
+
+        setCurrentRound(getCurrentRound()+1);
         setCardValues();
         getDeck().shuffle();
         for (Player player : getPlayers()) {
@@ -203,26 +215,25 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
+    private StringBuilder databaseColumns(String inBetween) {
+        StringBuilder columns = new StringBuilder(db.COLUMN_ROUND);
+        for (String string : db.COLUMN_PLAYERS) {
+            columns.append(inBetween).append(string);
+        }
+        columns.append(inBetween).append(db.COLUMN_DEALER);
+
+        return columns;
+    }
+
     void printResults() {
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
         confirm();
 
-
-
-
-
-        ///////////////////////////////////////////////////////////////////
         System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
 
         for (Player player : getPlayers()) {
             System.out.println(player.getName() + ": " + player.getHand().getPoints() + " points");
-            /////////////////////////////////////////////////////////////////////////////////
-
-            //INSERT VALUES
-
-
-
 
             if ( !failCheck(player) &&
                     (player.getHand().getPoints() > dealer.getHand().getPoints() || failCheck(dealer)) ) {
@@ -239,35 +250,14 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
             }
         }
 
+        db.saveCurrentRoundIntoTable(getCurrentRound(), getPlayers(), dealer);
+        db.displayTable();
+
         System.out.println("\nWinners of this round:");
         for (Player player : winners) {
             System.out.println(player.getName());
         }
-
-
-
-
-
-        /////////////////////////////////////////////////////////////////////////////////////
-        System.out.println("\nPoints so far:\n");
-        int dealersPoints = dealer.getPoints() / getNumberOfHumanPlayers();
-        for (Player player : getPlayers()) {
-            System.out.println(player.getName() + ": " + player.getPoints() + " points");
-        }
-        System.out.println("\nDealers points: " + dealersPoints);
-        /////////////////////////////////////////////////////////////////////////////////////
-
-        //SELECT TABLE
-
-
-
-
-
-
-
-
-
-        roundsToPlay--; // save initial value to display round number in database
+        roundsToPlay--;
 
         if (roundsToPlay > 0) {
             System.out.println("\n" + roundsToPlay + " rounds left...");
@@ -287,7 +277,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
     }
 
     void printFinalScore() {
-        System.out.println("Final result:");
+        System.out.println("\nFinal result:");
         confirm();
         dealer.setPoints(dealer.getPoints() / getNumberOfHumanPlayers());
 
@@ -305,7 +295,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
             scoreboardIndex++;
         }
 
-        System.out.println("\nDealers points: " + (dealer.getPoints() / getNumberOfHumanPlayers()));
+        System.out.println("\nDealers points: " + dealer.getPoints());
 
         Player winner = getPlayers()[0];
         if (dealer.getPoints() > winner.getPoints()) {
@@ -313,8 +303,5 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
 
         System.out.println("\nWINNER: " + winner.getName().toUpperCase() + "!!!");
-
-
-        //////////// CLOSE DATABASE CONNECTION
     }
 }

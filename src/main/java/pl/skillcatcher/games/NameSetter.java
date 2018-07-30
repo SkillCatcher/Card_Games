@@ -9,6 +9,9 @@ public interface NameSetter {
         for (int i = 0; i < numberOfHumanPlayers; i++) {
             System.out.println("Player " + (i+1) + " - name:\n");
             names[i] = scanner.nextLine();
+            if (names[i].equals("")) {
+                names[i] = "Unknown";
+            }
         }
         return names;
     }

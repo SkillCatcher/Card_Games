@@ -2,11 +2,6 @@ package pl.skillcatcher.games;
 
 import pl.skillcatcher.cards.*;
 import pl.skillcatcher.databases.BlackjackDB;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -215,16 +210,6 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
-    private StringBuilder databaseColumns(String inBetween) {
-        StringBuilder columns = new StringBuilder(db.COLUMN_ROUND);
-        for (String string : db.COLUMN_PLAYERS) {
-            columns.append(inBetween).append(string);
-        }
-        columns.append(inBetween).append(db.COLUMN_DEALER);
-
-        return columns;
-    }
-
     void printResults() {
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
@@ -262,18 +247,22 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         if (roundsToPlay > 0) {
             System.out.println("\n" + roundsToPlay + " rounds left...");
 
-            setDeck(new Deck());
-            for (Player player : getPlayers()) {
-                player.getCards().clear();
-            }
-            dealer.getCards().clear();
-            notFinishedPlayers.clear();
-            listOfPlayersToRemove.clear();
+            resetSettings();
             confirm();
             startTheGame();
         } else {
             printFinalScore();
         }
+    }
+
+    private void resetSettings() {
+        setDeck(new Deck());
+        for (Player player : getPlayers()) {
+            player.getCards().clear();
+        }
+        dealer.getCards().clear();
+        notFinishedPlayers.clear();
+        listOfPlayersToRemove.clear();
     }
 
     void printFinalScore() {

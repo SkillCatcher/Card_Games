@@ -6,6 +6,7 @@ import pl.skillcatcher.cards.Deck;
 import pl.skillcatcher.cards.Hand;
 import pl.skillcatcher.cards.Player;
 import pl.skillcatcher.cards.PlayerStatus;
+import pl.skillcatcher.databases.HeartsDB;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,20 +14,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, CorrectIntInputCheck {
-    private int currentRound;
     private Card[] pool;
     private boolean heartsAllowed;
-
-    public final String DB_NAME = "heartsResults.db";
-    public final String CONNECTION_STRING = "jdbc:h2:/C:/Users/SkillCatcher/IdeaProjects/Card_Games/" + DB_NAME;
-
-    public final String TABLE_CURRENT_HEARTS_GAME = "HeartsGame";
-
-    public final String COLUMN_ROUND = "Round";
-    public final String COLUMN_PLAYER_1;
-    public final String COLUMN_PLAYER_2;
-    public final String COLUMN_PLAYER_3;
-    public final String COLUMN_PLAYER_4;
+    private HeartsDB db;
 
     public Hearts() {
         setNumberOfAllPlayers(4);
@@ -34,15 +24,15 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         setNumberOfHumanPlayers(intInputWithCheck("Please choose the number of HUMAN players " +
                 "- between 0 (if you just want to watch and press enter) and 4 (all human players):", 0, 4));
         setDeck(new Deck());
-        this.currentRound = 1;
+        setCurrentRound(1);
         this.pool = new Card[getNumberOfAllPlayers()];
         setPlayers(new Player[getNumberOfAllPlayers()]);
         createPlayers(getPlayers(), setNames(getNumberOfHumanPlayers()));
 
-        COLUMN_PLAYER_1 = getPlayers()[0].getName();
-        COLUMN_PLAYER_2 = getPlayers()[1].getName();
-        COLUMN_PLAYER_3 = getPlayers()[2].getName();
-        COLUMN_PLAYER_4 = getPlayers()[3].getName();
+        String[] names = {getPlayers()[0].getName(), getPlayers()[1].getName(), getPlayers()[2].getName(),
+                getPlayers()[3].getName()}; //TODO: Extract this outside (like Blackjack)
+
+        db = new HeartsDB(names);
     }
 
     void setCardValues() {
@@ -58,28 +48,8 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
     }
 
     public void setUpGame() {
-        if (currentRound == 1) {
-            try {
-                Connection connection = DriverManager.getConnection(CONNECTION_STRING);
-                Statement statement = connection.createStatement();
-
-                statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_HEARTS_GAME);
-
-                statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_HEARTS_GAME + " ("
-                        + COLUMN_ROUND + " int, "
-                        + COLUMN_PLAYER_1 + " int, "
-                        + COLUMN_PLAYER_2 + " int, "
-                        + COLUMN_PLAYER_3 + " int, "
-                        + COLUMN_PLAYER_4 + " int)"
-                );
-
-                statement.close();
-                connection.close();
-
-            } catch (SQLException e) {
-                System.out.println("Error - " + e.getMessage());
-                e.printStackTrace();
-            }
+        if (getCurrentRound() == 1) {
+            db.createNewTable();
         }
 
         setCardValues();
@@ -236,52 +206,23 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
             pointsBeforeThisRound[player.getId()] = player.getPoints();
         }
         updatePoints();
-        System.out.println("Points after round " + currentRound + ":");
+        System.out.println("Points after round " + getCurrentRound() + ":");
         for (int i = 0; i < getPlayers().length; i++) {
             System.out.println((i+1) + ". " + getPlayers()[i].getName() + ": " + getPlayers()[i].getPoints()
                     + " (in this round: " + (getPlayers()[i].getPoints() - pointsBeforeThisRound[i]) + ")");
-            if (getPlayers()[i].getPoints() >= 100) {
+            if (getPlayers()[i].getPoints() >= 30) {
                 endGame = true;
             }
         }
 
-        try {
-            Connection connection = DriverManager.getConnection(CONNECTION_STRING);
-            Statement statement = connection.createStatement();
-
-            statement.execute("INSERT INTO " + TABLE_CURRENT_HEARTS_GAME + " ("
-                    + COLUMN_ROUND + ", " + COLUMN_PLAYER_1 + ", " + COLUMN_PLAYER_2 + ", " + COLUMN_PLAYER_3 + ", "
-                    + COLUMN_PLAYER_4 + ") VALUES (" + currentRound + ", " + getPlayers()[0].getPoints() + ", "
-                    + getPlayers()[1].getPoints() + ", " + getPlayers()[2].getPoints() + ", "
-                    + getPlayers()[3].getPoints() + ")");
-
-            ResultSet roundsPlayed = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_HEARTS_GAME);
-            System.out.println(COLUMN_ROUND + ":\t" + COLUMN_PLAYER_1 + ":\t" + COLUMN_PLAYER_2 + ":\t"
-                    + COLUMN_PLAYER_3 + ":\t" + COLUMN_PLAYER_4 + ":");
-
-            while (roundsPlayed.next()) {
-                System.out.println(roundsPlayed.getString(COLUMN_ROUND)
-                        + "\t\t" + roundsPlayed.getString(COLUMN_PLAYER_1)
-                        + "\t\t" + roundsPlayed.getString(COLUMN_PLAYER_2)
-                        + "\t\t" + roundsPlayed.getString(COLUMN_PLAYER_3)
-                        + "\t\t" + roundsPlayed.getString(COLUMN_PLAYER_4)
-                );
-            }
-
-            roundsPlayed.close();
-            statement.close();
-            connection.close();
-
-        } catch (SQLException e) {
-            System.out.println("Error - " + e.getMessage());
-            e.printStackTrace();
-        }
+        db.saveCurrentRoundToTheTable(getCurrentRound(), getPlayers());
+        db.displayTable();
 
         confirm();
         if (endGame) {
             printFinalScore();
         } else {
-            currentRound++;
+            setCurrentRound(getCurrentRound() + 1);
             resetGameSettings();
             startTheGame();
         }
@@ -406,7 +347,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
     }
 
     private int gameRotation() {
-        switch(currentRound%4) {
+        switch(getCurrentRound()%4) {
             case 1:
                 return 1;
             case 2:

@@ -13,8 +13,9 @@ public class BlackjackDB extends GameDB {
     }
 
     public void createNewTable() {
+        open();
         try {
-            open();
+
             Statement statement = createStatement();
 
             statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
@@ -23,11 +24,11 @@ public class BlackjackDB extends GameDB {
                     + databaseColumns(" int, ") + " int)");
 
             statement.close();
-            close();
         } catch (SQLException e) {
             System.out.println("Error - " + e.getMessage());
             e.printStackTrace();
         }
+        close();
     }
 
     public boolean saveCurrentRoundIntoTable(int round, Player[] players, Player dealer) {

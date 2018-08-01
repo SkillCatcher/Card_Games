@@ -12,22 +12,22 @@ public class BlackjackDB extends GameDB {
         super("blackjackResults.db", "BlackJackGame", COLUMN_PLAYERS);
     }
 
-    public void createNewTable() {
+    public void setUpNewTable() {
         open();
+        Statement statement = createStatement();
+
         try {
-
-            Statement statement = createStatement();
-
             statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
 
             statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_GAME + " ("
-                    + databaseColumns(" int, ") + " int)");
+                    + databaseColumns(" int, ", " int)"));
 
             statement.close();
         } catch (SQLException e) {
-            System.out.println("Error - " + e.getMessage());
+            System.out.println("Can't create a new Black Jack table - " + e.getMessage());
             e.printStackTrace();
         }
+
         close();
     }
 
@@ -36,8 +36,8 @@ public class BlackjackDB extends GameDB {
         boolean result = false;
 
         try {
-            String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" + databaseColumns(", ") +
-                    ") VALUES (" + databaseValues() + ")";
+            String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" +
+                    databaseColumns(", ", "") + ") VALUES (" + databaseValues() + ")";
 
             PreparedStatement insertPlayersPointsAsValues = connection.prepareStatement(insert);
             insertPlayersPointsAsValues.setInt(1, round);
@@ -70,7 +70,7 @@ public class BlackjackDB extends GameDB {
         try {
             Statement statement = createStatement();
             ResultSet results = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_GAME);
-            System.out.println("\n" + databaseColumns(":\t") + ":");
+            System.out.println("\n" + databaseColumns(":\t", ":"));
 
             while (results.next()) {
                 for (int i = 0; i < COLUMN_PLAYERS.length + 1; i++) {
@@ -91,12 +91,12 @@ public class BlackjackDB extends GameDB {
         close();
     }
 
-    private StringBuilder databaseColumns(String inBetween) {
+    private StringBuilder databaseColumns(String inBetween, String last) {
         StringBuilder columns = new StringBuilder(COLUMN_ROUND);
         for (String string : COLUMN_PLAYERS) {
             columns.append(inBetween).append(string);
         }
-        columns.append(inBetween).append(COLUMN_DEALER);
+        columns.append(inBetween).append(COLUMN_DEALER).append(last);
 
         return columns;
     }

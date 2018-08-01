@@ -79,7 +79,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     void setUpGame() {
         if (getCurrentRound() == 0) {
-            db.createNewTable();
+            db.setUpNewTable();
         }
 
         setCurrentRound(getCurrentRound()+1);

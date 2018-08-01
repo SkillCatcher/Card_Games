@@ -3,8 +3,8 @@ package pl.skillcatcher.databases;
 import java.sql.*;
 
 abstract public class GameDB {
-    final String DB_NAME;
-    final String CONNECTION_STRING;
+    private final String DB_NAME;
+    private final String CONNECTION_STRING;
 
     final String TABLE_CURRENT_GAME;
     final String[] COLUMN_PLAYERS;
@@ -18,13 +18,13 @@ abstract public class GameDB {
         this.TABLE_CURRENT_GAME = TABLE_CURRENT_GAME;
         this.COLUMN_PLAYERS = new String[columnPlayers.length];
         for (int i = 0; i < columnPlayers.length; i++) {
-            String safeName = "\""+columnPlayers[i]+"\"";
+            String safeName = "\"" + removeQuotes(columnPlayers[i]) + "\"";
             this.COLUMN_PLAYERS[i] = safeName;
         }
         this.COLUMN_ROUND = "Round";
     }
 
-    public boolean open() {
+    boolean open() {
         try {
             connection = DriverManager.getConnection(CONNECTION_STRING);
             return true;
@@ -34,7 +34,7 @@ abstract public class GameDB {
         }
     }
 
-    public Statement createStatement() {
+    Statement createStatement() {
         try {
             return connection.createStatement();
         } catch (SQLException e) {
@@ -43,7 +43,7 @@ abstract public class GameDB {
         return null;
     }
 
-    public void close() {
+    void close() {
         try {
             if (connection != null) {
                 connection.close();
@@ -53,6 +53,20 @@ abstract public class GameDB {
         }
     }
 
-    abstract void createNewTable();
-    abstract void displayTable();
+    public abstract void setUpNewTable();
+    public abstract void displayTable();
+
+    private String removeQuotes(String input) {
+        StringBuilder changedInput = new StringBuilder(input);
+        for (int i = 0; i < input.length(); i++) {
+            if (getLetter(input, i).equals("\"")) {
+                changedInput.setCharAt(i, ' ');
+            }
+        }
+        return changedInput.toString();
+    }
+
+    private String getLetter(String input, int index) {
+        return Character.toString(input.charAt(index));
+    }
 }

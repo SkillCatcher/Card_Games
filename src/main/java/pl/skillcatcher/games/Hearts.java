@@ -8,7 +8,6 @@ import pl.skillcatcher.cards.Player;
 import pl.skillcatcher.cards.PlayerStatus;
 import pl.skillcatcher.databases.HeartsDB;
 
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -49,7 +48,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
 
     public void setUpGame() {
         if (getCurrentRound() == 1) {
-            db.createNewTable();
+            db.setUpNewTable();
         }
 
         setCardValues();

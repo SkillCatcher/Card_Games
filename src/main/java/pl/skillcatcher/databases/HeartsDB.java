@@ -13,7 +13,7 @@ public class HeartsDB extends GameDB {
         super("heartsResults.db", "HeartsGame", playersNames);
     }
 
-    public void createNewTable() {
+    public void setUpNewTable() {
         open();
         Statement statement = createStatement();
 
@@ -25,7 +25,7 @@ public class HeartsDB extends GameDB {
 
             statement.close();
         } catch (SQLException e) {
-            System.out.println("Can't create a new table - " + e.getMessage());
+            System.out.println("Can't create a new Hearts table - " + e.getMessage());
             e.printStackTrace();
         }
 

@@ -1,9 +1,6 @@
 package pl.skillcatcher.databases;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 abstract public class GameDB {
     final String DB_NAME;
@@ -15,11 +12,15 @@ abstract public class GameDB {
 
     Connection connection;
 
-    public GameDB(String DB_NAME, String TABLE_CURRENT_GAME, String[] COLUMN_PLAYERS) {
+    public GameDB(String DB_NAME, String TABLE_CURRENT_GAME, String[] columnPlayers) {
         this.DB_NAME = DB_NAME;
         this.CONNECTION_STRING = "jdbc:h2:/C:/Users/SkillCatcher/IdeaProjects/Card_Games/" + DB_NAME;
         this.TABLE_CURRENT_GAME = TABLE_CURRENT_GAME;
-        this.COLUMN_PLAYERS = COLUMN_PLAYERS;
+        this.COLUMN_PLAYERS = new String[columnPlayers.length];
+        for (int i = 0; i < columnPlayers.length; i++) {
+            String safeName = "\""+columnPlayers[i]+"\"";
+            this.COLUMN_PLAYERS[i] = safeName;
+        }
         this.COLUMN_ROUND = "Round";
     }
 
@@ -51,4 +52,7 @@ abstract public class GameDB {
             System.out.println("Can't close the database - " + e.getMessage());
         }
     }
+
+    abstract void createNewTable();
+    abstract void displayTable();
 }

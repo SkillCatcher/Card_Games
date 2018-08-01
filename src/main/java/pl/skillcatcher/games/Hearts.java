@@ -210,7 +210,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         for (int i = 0; i < getPlayers().length; i++) {
             System.out.println((i+1) + ". " + getPlayers()[i].getName() + ": " + getPlayers()[i].getPoints()
                     + " (in this round: " + (getPlayers()[i].getPoints() - pointsBeforeThisRound[i]) + ")");
-            if (getPlayers()[i].getPoints() >= 30) {
+            if (getPlayers()[i].getPoints() >= 100) {
                 endGame = true;
             }
         }

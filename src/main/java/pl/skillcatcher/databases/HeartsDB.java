@@ -21,12 +21,7 @@ public class HeartsDB extends GameDB {
             statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
 
             statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_GAME + " ("
-                    + COLUMN_ROUND + " int, "
-                    + COLUMN_PLAYERS[0] + " int, "
-                    + COLUMN_PLAYERS[1] + " int, "
-                    + COLUMN_PLAYERS[2] + " int, "
-                    + COLUMN_PLAYERS[3] + " int)"
-            );
+                    + databaseColumns(" int, ", " int)"));
 
             statement.close();
         } catch (SQLException e) {
@@ -42,12 +37,8 @@ public class HeartsDB extends GameDB {
         boolean result = false;
 
         try {
-            String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" + COLUMN_ROUND +
-                    ", " + COLUMN_PLAYERS[0] +
-                    ", " + COLUMN_PLAYERS[1] +
-                    ", " + COLUMN_PLAYERS[2] +
-                    ", " + COLUMN_PLAYERS[3] +
-                    ") VALUES (?, ?, ?, ?, ?)";
+            String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" + databaseColumns(", ", "")
+                    + ") VALUES (?, ?, ?, ?, ?)";
 
             PreparedStatement insertPlayersPointsAsValues = connection.prepareStatement(insert);
             insertPlayersPointsAsValues.setInt(1, round);
@@ -74,13 +65,7 @@ public class HeartsDB extends GameDB {
         Statement statement = createStatement();
         try {
             ResultSet roundsPlayed = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_GAME);
-            System.out.println("\n"
-                    + COLUMN_ROUND + ":\t"
-                    + COLUMN_PLAYERS[0] + ":\t"
-                    + COLUMN_PLAYERS[1] + ":\t"
-                    + COLUMN_PLAYERS[2] + ":\t"
-                    + COLUMN_PLAYERS[3] + ":"
-            );
+            System.out.println("\n" + databaseColumns(":\t", ":"));
 
             while (roundsPlayed.next()) {
                 System.out.println(roundsPlayed.getInt(COLUMN_ROUND)
@@ -99,6 +84,16 @@ public class HeartsDB extends GameDB {
         }
 
         close();
+    }
+
+    private StringBuilder databaseColumns(String inBetween, String last) {
+        StringBuilder columns = new StringBuilder(COLUMN_ROUND);
+        for (String string : COLUMN_PLAYERS) {
+            columns.append(inBetween).append(string);
+        }
+        columns.append(last);
+
+        return columns;
     }
 
 

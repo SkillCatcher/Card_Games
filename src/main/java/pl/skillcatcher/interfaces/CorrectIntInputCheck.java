@@ -1,4 +1,4 @@
-package pl.skillcatcher.games;
+package pl.skillcatcher.interfaces;
 
 import java.util.Scanner;
 

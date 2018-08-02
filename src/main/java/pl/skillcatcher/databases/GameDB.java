@@ -12,6 +12,10 @@ abstract public class GameDB {
 
     Connection connection;
 
+    public String[] getCOLUMN_PLAYERS() {
+        return COLUMN_PLAYERS;
+    }
+
     public GameDB(String DB_NAME, String TABLE_CURRENT_GAME, String[] columnPlayers) {
         this.DB_NAME = DB_NAME;
         this.CONNECTION_STRING = "jdbc:h2:/C:/Users/SkillCatcher/IdeaProjects/Card_Games/" + DB_NAME;
@@ -56,7 +60,7 @@ abstract public class GameDB {
     public abstract void setUpNewTable();
     public abstract void displayTable();
 
-    private String removeQuotes(String input) {
+    String removeQuotes(String input) {
         StringBuilder changedInput = new StringBuilder(input);
         for (int i = 0; i < input.length(); i++) {
             if (getLetter(input, i).equals("\"")) {

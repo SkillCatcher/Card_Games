@@ -7,15 +7,12 @@ import java.util.List;
 public class Deck {
 
     private List<Card> cards = new ArrayList<>();
-
     public List<Card> getCards() {
         return cards;
     }
-
     public Card getACard(int index) {
         return cards.get(index);
     }
-
     public void setCards(List<Card> cards) {
         this.cards = cards;
     }
@@ -49,15 +46,37 @@ public class Deck {
 
     public void shuffle() {
         Collections.shuffle(getCards());
-//        List<Card> temp = new ArrayList<>();
-//        final int size = cards.size();
-//        for (int i = 0; i < size; i++) {
-//            int randomCardId = (int)Math.floor(Math.random()*cards.size());
-//            Card randomCard = cards.get(randomCardId);
-//            cards.remove(randomCardId);
-//            temp.add(randomCard);
-//        }
-//
-//        setCards(temp);
+    }
+
+    public void setCardValuesById(int minId, int maxId, int value) {
+        for (int i = minId; i <= maxId; i++) {
+            getACard(i).setValue(value);
+        }
+    }
+
+    public void setSingleCardValueById(int id, int value) {
+        getACard(id).setValue(value);
+    }
+
+    public void setCardValuesByColor(CardColour cardColour, int value) {
+        for (Card card : getCards()) {
+            if (card.getColour().equals(cardColour)) {
+                card.setValue(value);
+            }
+        }
+    }
+
+    public void setCardValuesByNumber(CardNumber cardNumber, int value) {
+        for (Card card : getCards()) {
+            if (card.getNumber().equals(cardNumber)) {
+                card.setValue(value);
+            }
+        }
+    }
+
+    public void setAllCardValues(int value) {
+        for (Card card : getCards()) {
+            card.setValue(value);
+        }
     }
 }

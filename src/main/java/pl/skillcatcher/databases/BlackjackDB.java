@@ -20,7 +20,7 @@ public class BlackjackDB extends GameDB {
             statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
 
             statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_GAME + " ("
-                    + databaseColumns(" int, ", " int)"));
+                    + databaseColumns(" int, ", " int)", false));
 
             statement.close();
         } catch (SQLException e) {
@@ -37,7 +37,7 @@ public class BlackjackDB extends GameDB {
 
         try {
             String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" +
-                    databaseColumns(", ", "") + ") VALUES (" + databaseValues() + ")";
+                    databaseColumns(", ", "", false) + ") VALUES (" + databaseValues() + ")";
 
             PreparedStatement insertPlayersPointsAsValues = connection.prepareStatement(insert);
             insertPlayersPointsAsValues.setInt(1, round);
@@ -70,7 +70,7 @@ public class BlackjackDB extends GameDB {
         try {
             Statement statement = createStatement();
             ResultSet results = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_GAME);
-            System.out.println("\n" + databaseColumns(":\t", ":"));
+            System.out.println("\n" + databaseColumns(":\t", ":", true));
 
             while (results.next()) {
                 for (int i = 0; i < COLUMN_PLAYERS.length + 1; i++) {
@@ -91,9 +91,12 @@ public class BlackjackDB extends GameDB {
         close();
     }
 
-    private StringBuilder databaseColumns(String inBetween, String last) {
+    private StringBuilder databaseColumns(String inBetween, String last, boolean areQuotesRemoved) {
         StringBuilder columns = new StringBuilder(COLUMN_ROUND);
         for (String string : COLUMN_PLAYERS) {
+            if (areQuotesRemoved) {
+                string = removeQuotes(string).trim();
+            }
             columns.append(inBetween).append(string);
         }
         columns.append(inBetween).append(COLUMN_DEALER).append(last);

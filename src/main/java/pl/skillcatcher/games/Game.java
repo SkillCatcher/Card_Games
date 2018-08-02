@@ -61,7 +61,7 @@ abstract class Game {
     }
 
     abstract void setUpGame();
-    abstract void setCardValues();
+    abstract void dealCards();
     abstract void startTheGame();
     abstract void currentSituation(Player player);
     abstract void makeMove(Player player);

@@ -2,6 +2,10 @@ package pl.skillcatcher.games;
 
 import pl.skillcatcher.cards.*;
 import pl.skillcatcher.databases.BlackjackDB;
+import pl.skillcatcher.interfaces.Confirmable;
+import pl.skillcatcher.interfaces.CorrectIntInputCheck;
+import pl.skillcatcher.interfaces.PlayersCreator;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,6 +16,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
     private Player dealer;
     private ArrayList<Player> notFinishedPlayers;
     private ArrayList<Player> listOfPlayersToRemove;
+    private BlackJackStatus bjStatus;
     private BlackjackDB db;
 
     public int getRoundsToPlay() {
@@ -46,15 +51,35 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         this.listOfPlayersToRemove = listOfPlayersToRemove;
     }
 
+    public BlackJackStatus getBjStatus() {
+        return bjStatus;
+    }
+
+    public void setBjStatus(BlackJackStatus bjStatus) {
+        this.bjStatus = bjStatus;
+    }
+
+    public BlackjackDB getDb() {
+        return db;
+    }
+
+    public void setDb(BlackjackDB db) {
+        this.db = db;
+    }
+
     BlackJack(int numberOfHumanPlayers, int roundsToPlay, String[] playersNames) {
         setDeck(new Deck());
         setNumberOfHumanPlayers(numberOfHumanPlayers);
         setNumberOfAllPlayers(getNumberOfHumanPlayers());
+
         this.roundsToPlay = roundsToPlay;
         setCurrentRound(roundsToPlay - this.roundsToPlay);
+
         this.dealer = new Player("Dealer", -1, PlayerStatus.AI);
         this.notFinishedPlayers = new ArrayList<>();
         this.listOfPlayersToRemove = new ArrayList<>();
+        this.bjStatus = BlackJackStatus.BEFORE_SETUP;
+
         setPlayers(new Player[getNumberOfAllPlayers()]);
         if (numberOfHumanPlayers > playersNames.length) {
             throw new ArrayIndexOutOfBoundsException("List of names (" + playersNames.length +
@@ -65,25 +90,8 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
-    void setCardValues() {
-        for (int i = 0; i < 52; i++) {
-            if(i < 36) {
-                getDeck().getACard(i).setValue((i/4)+2);
-            } else if (i < 48) {
-                getDeck().getACard(i).setValue(10);
-            } else {
-                getDeck().getACard(i).setValue(11);
-            }
-        }
-    }
-
-    void setUpGame() {
-        if (getCurrentRound() == 0) {
-            db.setUpNewTable();
-        }
-
-        setCurrentRound(getCurrentRound()+1);
-        setCardValues();
+    @Override
+    void dealCards() {
         getDeck().shuffle();
         for (Player player : getPlayers()) {
             getDeck().dealACard(player.getHand());
@@ -91,21 +99,47 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
         getDeck().dealACard(dealer.getHand());
         getDeck().dealACard(dealer.getHand());
+    }
+
+    @Override
+    void setUpGame() {
+        getDeck().setCardValuesByNumber(CardNumber.ACE, 11);
+        getDeck().setCardValuesById(36, 47, 10);
+        for (int i = 0; i < 36; i++) {
+            getDeck().setSingleCardValueById(i, (i/4)+2);
+        }
+
+        if (getCurrentRound() == 0) {
+            db.setUpNewTable();
+        }
+
+        setCurrentRound(getCurrentRound()+1);
+        dealCards();
 
         setCurrentPlayer(getPlayers()[roundsToPlay%getNumberOfHumanPlayers()]);
         addToListFromCurrentPlayer(getPlayers(), notFinishedPlayers, getCurrentPlayer());
+        setBjStatus(BlackJackStatus.AFTER_SETUP);
     }
 
+    @Override
     void startTheGame() {
-        setUpGame();
-        while (notFinishedPlayers.size() > 0) {
-            for (Player player : notFinishedPlayers) {
-                currentSituation(player);
-            }
-            removePlayersFromList(notFinishedPlayers, listOfPlayersToRemove);
+        removePlayersFromList(notFinishedPlayers, listOfPlayersToRemove);
+
+        if (notFinishedPlayers.size() == 0) {
+            System.out.println("\nDealer's turn...\n");
+            setBjStatus(BlackJackStatus.ALL_PLAYERS_DONE);
+        } else {
+            setBjStatus(BlackJackStatus.PLAYER_READY);
         }
-        System.out.println("\nDealer's turn...\n");
-        virtualPlayerMove(dealer);
+
+//        while (notFinishedPlayers.size() > 0) {
+//            for (Player player : notFinishedPlayers) {
+//                currentSituation(player);
+//            }
+//            removePlayersFromList(notFinishedPlayers, listOfPlayersToRemove);
+//        }
+//        System.out.println("\nDealer's turn...\n");
+//        virtualPlayerMove(dealer);
     }
 
     private void addToListFromCurrentPlayer(Player[] allPlayers, ArrayList<Player> list, Player current) {
@@ -114,12 +148,13 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
-    private void removePlayersFromList(ArrayList<Player> biggerList, ArrayList<Player> smallerList) {
+    void removePlayersFromList(ArrayList<Player> biggerList, ArrayList<Player> smallerList) {
         for (Player player : smallerList) {
             biggerList.remove(player);
         }
     }
 
+    @Override
     void currentSituation(Player player) {
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN\n");
         confirm();
@@ -169,6 +204,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
+    @Override
     void makeMove(Player player) {
         int choice = intInputWithCheck("Do you want a hit or do you want to stay? " +
                 "[Press 1 or 2, and confirm with ENTER]\n" +
@@ -189,6 +225,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         }
     }
 
+    @Override
     void virtualPlayerMove(Player player) {
         confirm();
         decreaseAceValue(player);
@@ -203,13 +240,15 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         if (playerPoints < 17) {
             System.out.println("Dealer draws another card...");
             getDeck().dealACard(player.getHand());
-            virtualPlayerMove(player);
+            //virtualPlayerMove(player);
         } else {
             System.out.println("Dealer ends game with " + player.getHand().getPoints() + " points");
-            printResults();
+            //printResults();
+            setBjStatus(BlackJackStatus.ROUND_DONE);
         }
     }
 
+    @Override
     void printResults() {
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
@@ -219,7 +258,6 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
         for (Player player : getPlayers()) {
             System.out.println(player.getName() + ": " + player.getHand().getPoints() + " points");
-
             if ( !failCheck(player) &&
                     (player.getHand().getPoints() > dealer.getHand().getPoints() || failCheck(dealer)) ) {
                 winners.add(player);
@@ -245,13 +283,17 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         roundsToPlay--;
 
         if (roundsToPlay > 0) {
-            System.out.println("\n" + roundsToPlay + " rounds left...");
-
+            setBjStatus(BlackJackStatus.BEFORE_SETUP);
             resetSettings();
-            confirm();
-            startTheGame();
+            System.out.println("\n" + roundsToPlay + " rounds left...");
+//            System.out.println("\n" + roundsToPlay + " rounds left...");
+//
+//            resetSettings();
+//            confirm();
+//            startTheGame();
         } else {
-            printFinalScore();
+            setBjStatus(BlackJackStatus.GAME_DONE);
+            //printFinalScore();
         }
     }
 
@@ -265,32 +307,59 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         listOfPlayersToRemove.clear();
     }
 
+    @Override
     void printFinalScore() {
         System.out.println("\nFinal result:");
         confirm();
         dealer.setPoints(dealer.getPoints() / getNumberOfHumanPlayers());
+        Player winner;
+        String verdict;
 
-        class PointsComparator implements Comparator<Player> {
-            @Override
-            public int compare(Player o1, Player o2) {
-                return Integer.compare(o2.getPoints(), o1.getPoints());
+        if (getPlayers().length == 1) {
+            System.out.println("\n" + getPlayers()[0].getName() + ": " + getPlayers()[0].getPoints() + " points");
+            if (dealer.getPoints() > getPlayers()[0].getPoints()) {
+                winner = dealer;
+            } else {
+                winner = getPlayers()[0];
             }
-        }
-        Arrays.sort(getPlayers(), new PointsComparator());
+            verdict = "\nWINNER: " + winner.getName().toUpperCase() + "!!!";
+        } else {
+            class PointsComparator implements Comparator<Player> {
+                @Override
+                public int compare(Player o1, Player o2) {
+                    return Integer.compare(o2.getPoints(), o1.getPoints());
+                }
+            }
+            Arrays.sort(getPlayers(), new PointsComparator());
 
-        int scoreboardIndex = 1;
-        for (Player player : getPlayers()) {
-            System.out.println(scoreboardIndex + ". " + player.getName() + ": " + player.getPoints() + " points");
-            scoreboardIndex++;
+            int scoreboardIndex = 1;
+            for (Player player : getPlayers()) {
+                System.out.println(scoreboardIndex + ". " + player.getName() + ": "
+                        + player.getPoints() + " points");
+                scoreboardIndex++;
+            }
+
+            winner = getPlayers()[0];
+
+            if (winner.getPoints() == getPlayers()[1].getPoints() && dealer.getPoints() <= winner.getPoints()) {
+                StringBuilder winners = new StringBuilder("\nTIED GAME!!! THE WINNERS ARE:");
+                for (Player player : getPlayers()) {
+                    if (player.getPoints() == winner.getPoints()) {
+                        winners.append("\n- " + player.getName() + "!!!");
+                    } else {
+                        break;
+                    }
+                }
+                verdict = winners.toString();
+            } else {
+                if (dealer.getPoints() > getPlayers()[0].getPoints()) {
+                    winner = dealer;
+                }
+                verdict = "\nWINNER: " + winner.getName().toUpperCase() + "!!!";
+            }
         }
 
         System.out.println("\nDealers points: " + dealer.getPoints());
-
-        Player winner = getPlayers()[0];
-        if (dealer.getPoints() > winner.getPoints()) {
-            winner = dealer;
-        }
-
-        System.out.println("\nWINNER: " + winner.getName().toUpperCase() + "!!!");
+        System.out.println(verdict);
     }
 }

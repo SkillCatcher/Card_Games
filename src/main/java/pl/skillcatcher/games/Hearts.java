@@ -7,6 +7,10 @@ import pl.skillcatcher.cards.Hand;
 import pl.skillcatcher.cards.Player;
 import pl.skillcatcher.cards.PlayerStatus;
 import pl.skillcatcher.databases.HeartsDB;
+import pl.skillcatcher.interfaces.Confirmable;
+import pl.skillcatcher.interfaces.CorrectIntInputCheck;
+import pl.skillcatcher.interfaces.NameSetter;
+import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,24 +38,21 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         db = new HeartsDB(names);
     }
 
-    void setCardValues() {
-        for (int i = 0; i < 52; i++) {
-            if(getDeck().getACard(i).getId() == 43) {
-                getDeck().getACard(i).setValue(13);
-            } else if(getDeck().getACard(i).getColour() == CardColour.HEARTS) {
-                getDeck().getACard(i).setValue(1);
-            } else {
-                getDeck().getACard(i).setValue(0);
-            }
-        }
-    }
-
+    @Override
     public void setUpGame() {
+        getDeck().setAllCardValues(0);
+        getDeck().setCardValuesByColor(CardColour.HEARTS, 1);
+        getDeck().setSingleCardValueById(43, 13);
+
         if (getCurrentRound() == 1) {
             db.setUpNewTable();
         }
 
-        setCardValues();
+        dealCards();
+    }
+
+    @Override
+    void dealCards() {
         getDeck().shuffle();
         while (getDeck().getCards().size() > 0) {
             for (Player player : getPlayers()) {
@@ -60,6 +61,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         }
     }
 
+    @Override
     void startTheGame() {
         setUpGame();
 
@@ -80,6 +82,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         printResults();
     }
 
+    @Override
     void currentSituation(Player player) {
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
@@ -95,6 +98,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         }
     }
 
+    @Override
     void makeMove(Player player) {
         System.out.println(player.getName() + " - your hand:");
         player.getHand().displayHand();
@@ -125,6 +129,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         }
     }
 
+    @Override
     void virtualPlayerMove(Player playerAI) {
         Hand playableCards = new Hand();
 
@@ -198,6 +203,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         return null;
     }
 
+    @Override
     void printResults() {
         boolean endGame = false;
         int[] pointsBeforeThisRound = new int[getNumberOfAllPlayers()];
@@ -227,6 +233,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         }
     }
 
+    @Override
     void printFinalScore() {
         sortPlayersByPoints();
         Player winner = getPlayers()[0];

@@ -70,5 +70,4 @@ public class Player {
     public List<Card> getCards() {
         return getHand().getCards();
     }
-
 }

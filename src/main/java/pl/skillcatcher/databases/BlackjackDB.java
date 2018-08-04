@@ -73,9 +73,11 @@ public class BlackjackDB extends GameDB {
             System.out.println("\n" + databaseColumns(":\t", ":", true));
 
             while (results.next()) {
-                for (int i = 0; i < COLUMN_PLAYERS.length + 1; i++) {
-                    System.out.print(results.getInt(i+1));
-                    System.out.print("\t\t");
+                System.out.print(results.getInt(1));
+                System.out.print(databaseTabulator(COLUMN_ROUND));
+                for (int i = 0; i < COLUMN_PLAYERS.length; i++) {
+                    System.out.print(results.getInt(i+2));
+                    System.out.print(databaseTabulator(COLUMN_PLAYERS[i]));
                 }
                 System.out.print(results.getInt(COLUMN_DEALER));
                 System.out.println();
@@ -102,6 +104,14 @@ public class BlackjackDB extends GameDB {
         columns.append(inBetween).append(COLUMN_DEALER).append(last);
 
         return columns;
+    }
+
+    private String databaseTabulator(String columnName) {
+        StringBuilder tab = new StringBuilder();
+        for (int i = 0; i < ((columnName.length()-1)/4 + 1); i++) {
+            tab.append("\t");
+        }
+        return tab.toString();
     }
 
     private String databaseValues() {

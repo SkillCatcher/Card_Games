@@ -2,6 +2,7 @@ package pl.skillcatcher.games;
 
 import pl.skillcatcher.cards.Deck;
 import pl.skillcatcher.cards.Player;
+import pl.skillcatcher.exceptions.GameFlowException;
 
 abstract class Game {
 
@@ -12,61 +13,61 @@ abstract class Game {
     private Player currentPlayer;
     private Player[] players;
 
-    public Deck getDeck() {
+    Deck getDeck() {
         return deck;
     }
 
-    public void setDeck(Deck deck) {
+    void setDeck(Deck deck) {
         this.deck = deck;
     }
 
-    public int getCurrentRound() {
+    int getCurrentRound() {
         return currentRound;
     }
 
-    public void setCurrentRound(int currentRound) {
+    void setCurrentRound(int currentRound) {
         this.currentRound = currentRound;
     }
 
-    public int getNumberOfHumanPlayers() {
+    int getNumberOfHumanPlayers() {
         return numberOfHumanPlayers;
     }
 
-    public void setNumberOfHumanPlayers(int numberOfHumanPlayers) {
+    void setNumberOfHumanPlayers(int numberOfHumanPlayers) {
         this.numberOfHumanPlayers = numberOfHumanPlayers;
     }
 
-    public int getNumberOfAllPlayers() {
+    int getNumberOfAllPlayers() {
         return numberOfAllPlayers;
     }
 
-    public void setNumberOfAllPlayers(int numberOfAllPlayers) {
+    void setNumberOfAllPlayers(int numberOfAllPlayers) {
         this.numberOfAllPlayers = numberOfAllPlayers;
     }
 
-    public Player getCurrentPlayer() {
+    Player getCurrentPlayer() {
         return currentPlayer;
     }
 
-    public void setCurrentPlayer(Player currentPlayer) {
+    void setCurrentPlayer(Player currentPlayer) {
         this.currentPlayer = currentPlayer;
     }
 
-    public Player[] getPlayers() {
+    Player[] getPlayers() {
         return players;
     }
 
-    public void setPlayers(Player[] players) {
+    void setPlayers(Player[] players) {
         this.players = players;
     }
 
-    abstract void setUpGame();
+    abstract void setUpGame() throws GameFlowException;
     abstract void dealCards();
-    abstract void startTheGame();
-    abstract void currentSituation(Player player);
-    abstract void makeMove(Player player);
-    abstract void virtualPlayerMove(Player playerAI);
-    abstract void printResults();
-    abstract void printFinalScore();
+    abstract void startTheGame() throws GameFlowException;
+    abstract void currentSituation(Player player) throws GameFlowException;
+    abstract void makeMove(Player player) throws GameFlowException;
+    abstract void virtualPlayerMove(Player playerAI) throws GameFlowException;
+    abstract void printResults() throws GameFlowException;
+    abstract void printFinalScore() throws GameFlowException;
 
 }

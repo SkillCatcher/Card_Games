@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public interface CorrectIntInputCheck {
     default int intInputWithCheck(String message, int min, int max) {
-        System.out.println("\n" + message + "");
+        System.out.println("\n" + message);
         Scanner scanner = new Scanner(System.in);
         if (scanner.hasNextInt()) {
             int choice = scanner.nextInt();

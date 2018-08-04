@@ -3,10 +3,19 @@ package pl.skillcatcher.cards;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 public class Hand extends Deck {
 
-    private ArrayList<Card> collectedCards;
+    private List<Card> collectedCards;
+
+    List<Card> getCollectedCards() {
+        return collectedCards;
+    }
+
+    void setCollectedCards(List<Card> collectedCards) {
+        this.collectedCards = collectedCards;
+    }
 
     public Hand() {
         super(1, 0);
@@ -20,10 +29,6 @@ public class Hand extends Deck {
         }
 
         return sum;
-    }
-
-    ArrayList<Card> getCollectedCards() {
-        return collectedCards;
     }
 
     @Override

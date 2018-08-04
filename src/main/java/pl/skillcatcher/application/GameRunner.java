@@ -4,6 +4,8 @@ import pl.skillcatcher.interfaces.Confirmable;
 import pl.skillcatcher.interfaces.CorrectIntInputCheck;
 import pl.skillcatcher.games.MainMenu;
 
+import java.util.Scanner;
+
 public class GameRunner implements Confirmable, CorrectIntInputCheck {
     public static void main(String[] args) {
         MainMenu cardGame = new MainMenu();

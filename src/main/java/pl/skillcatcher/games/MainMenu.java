@@ -71,7 +71,6 @@ public class MainMenu implements CorrectIntInputCheck, Confirmable, NameSetter {
                         throw new GameFlowException("Can't play another round or print final results");
                     }
                 }
-//TODO: ADJUST METHODS IN THE BLACKJACK CLASS
                 break;
             case 2:
                 System.out.println("Let's play Hearts!");

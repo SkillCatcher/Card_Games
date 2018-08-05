@@ -177,7 +177,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
             listOfPlayersToRemove.add(player);
         } else {
-            makeMove(player);
+            setBjStatus(BlackJackStatus.PLAYER_MOVING);
         }
     }
 
@@ -207,7 +207,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     @Override
     void makeMove(Player player) throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.PLAYER_READY)) {
+        if (!bjStatus.equals(BlackJackStatus.PLAYER_MOVING)) {
             throw new GameFlowException("Can't continue the game");
         }
         int choice = intInputWithCheck("Do you want a hit or do you want to stay? " +

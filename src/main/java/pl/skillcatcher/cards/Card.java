@@ -8,7 +8,7 @@ public class Card {
     private CardNumber number;
     private CardColour colour;
 
-    Card(int id) throws IllegalArgumentException {
+    public Card(int id) throws IllegalArgumentException {
         if (id < 52 && id > -1) {
             this.name = determineNumber(id) + " of " + determineColour(id);
             this.value = 0;

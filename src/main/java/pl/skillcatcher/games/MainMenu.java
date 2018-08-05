@@ -46,6 +46,9 @@ public class MainMenu implements CorrectIntInputCheck, Confirmable, NameSetter {
                         if (blackJack.getBjStatus().equals(BlackJackStatus.PLAYER_READY)) {
                             for (Player player : blackJack.getNotFinishedPlayers()) {
                                 blackJack.currentSituation(player);
+                                if (blackJack.getBjStatus().equals(BlackJackStatus.PLAYER_MOVING)) {
+                                    blackJack.makeMove(player);
+                                }
                             }
                             blackJack.setBjStatus(BlackJackStatus.AFTER_SETUP);
                         } else if (!(blackJack.getBjStatus().equals(BlackJackStatus.ALL_PLAYERS_DONE))) {

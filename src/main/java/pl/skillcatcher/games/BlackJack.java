@@ -218,11 +218,13 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         switch (choice) {
             case 1:
                 getDeck().dealACard(player.getHand());
+                setBjStatus(BlackJackStatus.PLAYER_READY);
                 break;
             case 2:
                 System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
                 confirm();
                 listOfPlayersToRemove.add(player);
+                setBjStatus(BlackJackStatus.PLAYER_READY);
                 break;
             default:
                 break;

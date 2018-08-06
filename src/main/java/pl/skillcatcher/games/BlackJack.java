@@ -44,7 +44,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         this.notFinishedPlayers = notFinishedPlayers;
     }
 
-    public ArrayList<Player> getListOfPlayersToRemove() {
+    ArrayList<Player> getListOfPlayersToRemove() {
         return listOfPlayersToRemove;
     }
 

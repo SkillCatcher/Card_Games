@@ -1,6 +1,6 @@
 package pl.skillcatcher.games;
 
-public enum BlackJackStatus {
+public enum GameStatus {
 
     BEFORE_SETUP,
     AFTER_SETUP,

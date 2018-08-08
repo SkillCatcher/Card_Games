@@ -9,8 +9,8 @@ import java.sql.Statement;
 
 public class HeartsDB extends GameDB {
 
-    public HeartsDB(String[] playersNames) {
-        super("heartsResults.db", "HeartsGame", playersNames);
+    public HeartsDB(String[] COLUMN_PLAYERS) {
+        super("heartsResults.db", "HeartsGame", COLUMN_PLAYERS);
     }
 
     public void setUpNewTable() {
@@ -37,7 +37,8 @@ public class HeartsDB extends GameDB {
         boolean result = false;
 
         try {
-            String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" + databaseColumns(", ", "")
+            String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " ("
+                    + databaseColumns(", ", "")
                     + ") VALUES (?, ?, ?, ?, ?)";
 
             PreparedStatement insertPlayersPointsAsValues = connection.prepareStatement(insert);
@@ -62,8 +63,8 @@ public class HeartsDB extends GameDB {
 
     public void displayTable() {
         open();
-        Statement statement = createStatement();
         try {
+            Statement statement = createStatement();
             ResultSet roundsPlayed = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_GAME);
             System.out.println("\n" + databaseColumns(":\t", ":"));
 

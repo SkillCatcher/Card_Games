@@ -60,10 +60,6 @@ public class Hand extends Deck {
         }
     }
 
-    public void clearCollectedCards() {
-        collectedCards.clear();
-    }
-
     private void sortCardsById() {
         class IdComparator implements Comparator<Card> {
             public int compare(Card o1, Card o2) {

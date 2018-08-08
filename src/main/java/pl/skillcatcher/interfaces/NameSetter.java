@@ -13,6 +13,7 @@ public interface NameSetter {
             for (int j = 0; j < names[i].length(); j++) {
                 if (!Character.toString(names[i].charAt(j)).equals(" ")) {
                     noName = false;
+                    break;
                 }
             }
             if (noName || names[i].equals("")) {

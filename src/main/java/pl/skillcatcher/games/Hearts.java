@@ -1,45 +1,49 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.Card;
-import pl.skillcatcher.cards.CardColour;
-import pl.skillcatcher.cards.Deck;
-import pl.skillcatcher.cards.Hand;
-import pl.skillcatcher.cards.Player;
-import pl.skillcatcher.cards.PlayerStatus;
+import pl.skillcatcher.cards.*;
 import pl.skillcatcher.databases.HeartsDB;
-import pl.skillcatcher.interfaces.Confirmable;
+import pl.skillcatcher.exceptions.GameFlowException;
 import pl.skillcatcher.interfaces.CorrectIntInputCheck;
-import pl.skillcatcher.interfaces.NameSetter;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class Hearts extends Game implements Confirmable, PlayersCreator, NameSetter, CorrectIntInputCheck {
+public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck {
     private Card[] pool;
     private boolean heartsAllowed;
     private HeartsDB db;
 
-    public Hearts() {
+    public Hearts(int numberOfHumanPlayers, String[] playersNames) {
+        setGameStatus(GameStatus.BEFORE_SETUP);
         setNumberOfAllPlayers(4);
         this.heartsAllowed = false;
-        setNumberOfHumanPlayers(intInputWithCheck("Please choose the number of HUMAN players " +
-                "- between 0 (if you just want to watch and press enter) and 4 (all human players):", 0, 4));
+        setNumberOfHumanPlayers(numberOfHumanPlayers);
         setDeck(new Deck());
         setCurrentRound(1);
         this.pool = new Card[getNumberOfAllPlayers()];
         setPlayers(new Player[getNumberOfAllPlayers()]);
-        createPlayers(getPlayers(), setNames(getNumberOfHumanPlayers()));
+        if (numberOfHumanPlayers > playersNames.length) {
+            throw new ArrayIndexOutOfBoundsException("List of names (" + playersNames.length +
+                    " names) is too short for " + numberOfHumanPlayers + " players...");
+        } else {
+            createPlayers(getPlayers(), playersNames);
+            String[] columnNames = {
+                    getPlayers()[0].getName().replace('"', ' ').trim(),
+                    getPlayers()[1].getName().replace('"', ' ').trim(),
+                    getPlayers()[2].getName().replace('"', ' ').trim(),
+                    getPlayers()[3].getName().replace('"', ' ').trim()};
+            db = new HeartsDB(columnNames);
+        }
 
-        String[] names = {getPlayers()[0].getName(), getPlayers()[1].getName(), getPlayers()[2].getName(),
-                getPlayers()[3].getName()}; //TODO: Extract this outside (like Blackjack)
-
-        db = new HeartsDB(names);
     }
 
     @Override
-    public void setUpGame() {
+    public void setUpGame() throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
+            throw new GameFlowException("Can't continue the game");
+        }
         getDeck().setAllCardValues(0);
         getDeck().setCardValuesByColor(CardColour.HEARTS, 1);
         getDeck().setSingleCardValueById(43, 13);
@@ -49,6 +53,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         }
 
         dealCards();
+        setGameStatus(GameStatus.AFTER_SETUP);
     }
 
     @Override
@@ -62,8 +67,10 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
     }
 
     @Override
-    void startTheGame() {
-        setUpGame();
+    void startTheGame() throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
+            throw new GameFlowException("Can't continue the game");
+        }
 
         if (gameRotation() != 0) {
             cardPassTurn();
@@ -72,42 +79,42 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         setCurrentPlayer(whoGotTwoOfClubs());
 
         if (getCurrentPlayer() != null) {
-            while (getCurrentPlayer().getCards().size() > 0) {
-                for (int i = getCurrentPlayer().getId(); i < getCurrentPlayer().getId() + 4; i++) {
-                    currentSituation(getPlayers()[i%4]);
-                }
-                moveResult();
-            }
+            setGameStatus(GameStatus.PLAYER_READY);
+        } else {
+            throw new NullPointerException("No Current Player detected...");
         }
-        printResults();
     }
 
     @Override
-    void currentSituation(Player player) {
+    void currentSituation(Player player) throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
+            throw new GameFlowException("Can't continue the game");
+        }
+
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
-        confirm();
+        getUserAttention().confirm();
 
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
             System.out.println("Cards in the game so far:");
             displayPool();
-            confirm();
-            makeMove(player);
-        } else {
-            virtualPlayerMove(player);
+            getUserAttention().confirm();
+            System.out.println(player.getName() + " - your hand:");
+            player.getHand().displayHand();
         }
+
+        setGameStatus(GameStatus.PLAYER_MOVING);
     }
 
     @Override
-    void makeMove(Player player) {
-        System.out.println(player.getName() + " - your hand:");
-        player.getHand().displayHand();
+    void makeMove(Player player) throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
+            throw new GameFlowException("Can't continue the game");
+        }
 
         int choice = intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
 
-        if (canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
-            pool[player.getId()] = player.getHand().playACard(choice);
-        } else {
+        while (!canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
             System.out.println("Sorry - you can't play that card, because:");
             if (!canBePlayed_ColourRule(player.getHand(), player.getHand().getACard(choice-1))) {
                 System.out.println("- card's colour doesn't match with color of the first card");
@@ -124,13 +131,20 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
             }
 
             System.out.println("\nPlease choose again...");
-            confirm();
-            makeMove(player);
+            getUserAttention().confirm();
+            choice = intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
         }
+
+        pool[player.getId()] = player.getHand().playACard(choice);
+        setGameStatus(GameStatus.PLAYER_READY);
     }
 
     @Override
-    void virtualPlayerMove(Player playerAI) {
+    void virtualPlayerMove(Player playerAI) throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
+            throw new GameFlowException("Can't continue the game");
+        }
+
         Hand playableCards = new Hand();
 
         for (Card card : playerAI.getCards()) {
@@ -143,19 +157,31 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         Card card = playableCards.getACard(cardIdChoice);
         pool[playerAI.getId()] = card;
         playerAI.getCards().remove(card);
+
+        setGameStatus(GameStatus.PLAYER_READY);
     }
 
-    private void moveResult() {
+    void moveResult() throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
+            throw new GameFlowException("Can't continue the game");
+        }
+
         System.out.println("\nEnd of deal");
-        confirm();
+        getUserAttention().confirm();
         System.out.println("\nCards in game:");
         displayPool();
         Player winner = poolWinner();
         System.out.println("This pool goes to " + winner.getName().toUpperCase());
-        confirm();
+        getUserAttention().confirm();
         checkForEnablingHearts();
         winner.getHand().collectCards(pool);
         setCurrentPlayer(winner);
+
+        if (getCurrentPlayer().getCards().size() > 0) {
+            setGameStatus(GameStatus.PLAYER_READY);
+        } else {
+            setGameStatus(GameStatus.ROUND_DONE);
+        }
     }
 
     private Player poolWinner() {
@@ -204,7 +230,10 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
     }
 
     @Override
-    void printResults() {
+    void printResults() throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
+            throw new GameFlowException("Can't continue the game");
+        }
         boolean endGame = false;
         int[] pointsBeforeThisRound = new int[getNumberOfAllPlayers()];
         for (Player player : getPlayers()) {
@@ -223,18 +252,21 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
         db.saveCurrentRoundToTheTable(getCurrentRound(), getPlayers());
         db.displayTable();
 
-        confirm();
+        getUserAttention().confirm();
         if (endGame) {
-            printFinalScore();
+            setGameStatus(GameStatus.GAME_DONE);
         } else {
             setCurrentRound(getCurrentRound() + 1);
             resetGameSettings();
-            startTheGame();
+            setGameStatus(GameStatus.BEFORE_SETUP);
         }
     }
 
     @Override
-    void printFinalScore() {
+    void printFinalScore() throws GameFlowException {
+        if (!getGameStatus().equals(GameStatus.GAME_DONE)) {
+            throw new GameFlowException("Can't continue the game");
+        }
         sortPlayersByPoints();
         Player winner = getPlayers()[0];
         int i = 0;
@@ -315,7 +347,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
             cardSets.add(i, new ArrayList<>());
 
             System.out.println("Card Pass Turn for player: " + getPlayers()[i].getName());
-            confirm();
+            getUserAttention().confirm();
 
             if (getPlayers()[i].getPlayerStatus().equals(PlayerStatus.USER)) {
                 System.out.println("Your hand:");
@@ -327,7 +359,7 @@ public class Hearts extends Game implements Confirmable, PlayersCreator, NameSet
 
                 cardPassChoice(getPlayers()[i], cardSets.get(i));
                 printCardChoices(cardSets.get(i));
-                confirm();
+                getUserAttention().confirm();
 
                 for (Card card : cardSets.get(i)) {
                     getPlayers()[i].getCards().remove(card);

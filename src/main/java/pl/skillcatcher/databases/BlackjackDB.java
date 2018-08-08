@@ -6,7 +6,7 @@ import java.sql.*;
 
 public class BlackjackDB extends GameDB {
 
-    public final String COLUMN_DEALER = "Dealer";
+    private final String COLUMN_DEALER = "Dealer";
 
     public BlackjackDB(String[] COLUMN_PLAYERS) {
         super("blackjackResults.db", "BlackJackGame", COLUMN_PLAYERS);
@@ -37,7 +37,8 @@ public class BlackjackDB extends GameDB {
 
         try {
             String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " (" +
-                    databaseColumns(", ", "", false) + ") VALUES (" + databaseValues() + ")";
+                    databaseColumns(", ", "", false) + ") VALUES (" +
+                    databaseValues() + ")";
 
             PreparedStatement insertPlayersPointsAsValues = connection.prepareStatement(insert);
             insertPlayersPointsAsValues.setInt(1, round);
@@ -51,17 +52,16 @@ public class BlackjackDB extends GameDB {
             }
 
             int addedRecords = insertPlayersPointsAsValues.executeUpdate();
-
             if (addedRecords == 1) {
                 result = true;
             }
 
-            close();
         } catch (SQLException e) {
             System.out.println("Can't insert data - " + e.getMessage());
             e.printStackTrace();
         }
 
+        close();
         return result;
     }
 

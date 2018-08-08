@@ -3,7 +3,6 @@ package pl.skillcatcher.games;
 import pl.skillcatcher.cards.*;
 import pl.skillcatcher.databases.BlackjackDB;
 import pl.skillcatcher.exceptions.GameFlowException;
-import pl.skillcatcher.interfaces.Confirmable;
 import pl.skillcatcher.interfaces.CorrectIntInputCheck;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
@@ -11,20 +10,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntInputCheck {
+class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
 
     private int roundsToPlay;
     private Player dealer;
     private ArrayList<Player> notFinishedPlayers;
     private ArrayList<Player> listOfPlayersToRemove;
-    private BlackJackStatus bjStatus;
     private BlackjackDB db;
 
     int getRoundsToPlay() {
         return roundsToPlay;
     }
 
-    public void setRoundsToPlay(int roundsToPlay) {
+    void setRoundsToPlay(int roundsToPlay) {
         this.roundsToPlay = roundsToPlay;
     }
 
@@ -52,14 +50,6 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         this.listOfPlayersToRemove = listOfPlayersToRemove;
     }
 
-    BlackJackStatus getBjStatus() {
-        return bjStatus;
-    }
-
-    void setBjStatus(BlackJackStatus bjStatus) {
-        this.bjStatus = bjStatus;
-    }
-
     public BlackjackDB getDb() {
         return db;
     }
@@ -79,7 +69,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         this.dealer = new Player("Dealer", -1, PlayerStatus.AI);
         this.notFinishedPlayers = new ArrayList<>();
         this.listOfPlayersToRemove = new ArrayList<>();
-        this.bjStatus = BlackJackStatus.BEFORE_SETUP;
+        setGameStatus(GameStatus.BEFORE_SETUP);
 
         setPlayers(new Player[getNumberOfAllPlayers()]);
         if (numberOfHumanPlayers > playersNames.length) {
@@ -104,7 +94,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     @Override
     void setUpGame() throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.BEFORE_SETUP)) {
+        if (!getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
             throw new GameFlowException("Can't set up the game");
         }
         getDeck().setCardValuesByNumber(CardNumber.ACE, 11);
@@ -122,21 +112,21 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
         setCurrentPlayer(getPlayers()[roundsToPlay%getNumberOfHumanPlayers()]);
         addToListFromCurrentPlayer(getPlayers(), notFinishedPlayers, getCurrentPlayer());
-        setBjStatus(BlackJackStatus.AFTER_SETUP);
+        setGameStatus(GameStatus.AFTER_SETUP);
     }
 
     @Override
     void startTheGame() throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.AFTER_SETUP)) {
+        if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
             throw new GameFlowException("Can't continue the game");
         }
         removePlayersFromList(notFinishedPlayers, listOfPlayersToRemove);
 
         if (notFinishedPlayers.size() == 0) {
             System.out.println("\nDealer's turn...\n");
-            setBjStatus(BlackJackStatus.ALL_PLAYERS_DONE);
+            setGameStatus(GameStatus.ALL_PLAYERS_DONE);
         } else {
-            setBjStatus(BlackJackStatus.PLAYER_READY);
+            setGameStatus(GameStatus.PLAYER_READY);
         }
     }
 
@@ -154,11 +144,11 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     @Override
     void currentSituation(Player player) throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.PLAYER_READY)) {
+        if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
             throw new GameFlowException("Can't continue the game");
         }
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN\n");
-        confirm();
+        getUserAttention().confirm();
 
         displayOpponentsHands(player);
 
@@ -177,7 +167,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
             listOfPlayersToRemove.add(player);
         } else {
-            setBjStatus(BlackJackStatus.PLAYER_MOVING);
+            setGameStatus(GameStatus.PLAYER_MOVING);
         }
     }
 
@@ -207,7 +197,7 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     @Override
     void makeMove(Player player) throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.PLAYER_MOVING)) {
+        if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
             throw new GameFlowException("Can't continue the game");
         }
         int choice = intInputWithCheck("Do you want a hit or do you want to stay? " +
@@ -218,13 +208,13 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         switch (choice) {
             case 1:
                 getDeck().dealACard(player.getHand());
-                setBjStatus(BlackJackStatus.PLAYER_READY);
+                setGameStatus(GameStatus.PLAYER_READY);
                 break;
             case 2:
                 System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
-                confirm();
+                getUserAttention().confirm();
                 listOfPlayersToRemove.add(player);
-                setBjStatus(BlackJackStatus.PLAYER_READY);
+                setGameStatus(GameStatus.PLAYER_READY);
                 break;
             default:
                 break;
@@ -233,10 +223,10 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     @Override
     void virtualPlayerMove(Player player) throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.ALL_PLAYERS_DONE)) {
+        if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
-        confirm();
+        getUserAttention().confirm();
         decreaseAceValue(player);
         System.out.println("\nDealer currently has this hand: ");
         player.getHand().displayHand();
@@ -251,18 +241,18 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
             getDeck().dealACard(player.getHand());
         } else {
             System.out.println("Dealer ends game with " + player.getHand().getPoints() + " points");
-            setBjStatus(BlackJackStatus.ROUND_DONE);
+            setGameStatus(GameStatus.ROUND_DONE);
         }
     }
 
     @Override
     void printResults() throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.ROUND_DONE)) {
+        if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
-        confirm();
+        getUserAttention().confirm();
 
         System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
 
@@ -293,11 +283,11 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
         roundsToPlay--;
 
         if (roundsToPlay > 0) {
-            setBjStatus(BlackJackStatus.BEFORE_SETUP);
+            setGameStatus(GameStatus.BEFORE_SETUP);
             resetSettings();
             System.out.println("\n" + roundsToPlay + " rounds left...");
         } else {
-            setBjStatus(BlackJackStatus.GAME_DONE);
+            setGameStatus(GameStatus.GAME_DONE);
         }
     }
 
@@ -313,11 +303,11 @@ class BlackJack extends Game implements Confirmable, PlayersCreator, CorrectIntI
 
     @Override
     void printFinalScore() throws GameFlowException {
-        if (!bjStatus.equals(BlackJackStatus.GAME_DONE)) {
+        if (!getGameStatus().equals(GameStatus.GAME_DONE)) {
             throw new GameFlowException("Can't print final score");
         }
         System.out.println("\nFinal result:");
-        confirm();
+        getUserAttention().confirm();
         dealer.setPoints(dealer.getPoints() / getNumberOfHumanPlayers());
         Player winner;
         String verdict;

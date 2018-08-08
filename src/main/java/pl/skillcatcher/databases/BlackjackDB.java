@@ -106,14 +106,6 @@ public class BlackjackDB extends GameDB {
         return columns;
     }
 
-    private String databaseTabulator(String columnName) {
-        StringBuilder tab = new StringBuilder();
-        for (int i = 0; i < ((columnName.length()-1)/4 + 1); i++) {
-            tab.append("\t");
-        }
-        return tab.toString();
-    }
-
     private String databaseValues() {
         StringBuilder values = new StringBuilder("?, ");
         for (String string : COLUMN_PLAYERS) {

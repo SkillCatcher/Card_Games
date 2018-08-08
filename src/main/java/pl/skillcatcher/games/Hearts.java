@@ -30,10 +30,11 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         } else {
             createPlayers(getPlayers(), playersNames);
             String[] columnNames = {
-                    getPlayers()[0].getName().replace('"', ' ').trim(),
-                    getPlayers()[1].getName().replace('"', ' ').trim(),
-                    getPlayers()[2].getName().replace('"', ' ').trim(),
-                    getPlayers()[3].getName().replace('"', ' ').trim()};
+                    getPlayers()[0].getName(),
+                    getPlayers()[1].getName(),
+                    getPlayers()[2].getName(),
+                    getPlayers()[3].getName()
+            };
             db = new HeartsDB(columnNames);
         }
 

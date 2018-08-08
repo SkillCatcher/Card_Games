@@ -21,7 +21,7 @@ public class HeartsDB extends GameDB {
             statement.execute("DROP TABLE IF EXISTS " + TABLE_CURRENT_GAME);
 
             statement.execute("CREATE TABLE IF NOT EXISTS " + TABLE_CURRENT_GAME + " ("
-                    + databaseColumns(" int, ", " int)"));
+                    + databaseColumns(" int, ", " int)", false));
 
             statement.close();
         } catch (SQLException e) {
@@ -38,7 +38,7 @@ public class HeartsDB extends GameDB {
 
         try {
             String insert = "INSERT INTO " + TABLE_CURRENT_GAME + " ("
-                    + databaseColumns(", ", "")
+                    + databaseColumns(", ", "", false)
                     + ") VALUES (?, ?, ?, ?, ?)";
 
             PreparedStatement insertPlayersPointsAsValues = connection.prepareStatement(insert);
@@ -66,14 +66,14 @@ public class HeartsDB extends GameDB {
         try {
             Statement statement = createStatement();
             ResultSet roundsPlayed = statement.executeQuery("SELECT * FROM " + TABLE_CURRENT_GAME);
-            System.out.println("\n" + databaseColumns(":\t", ":"));
+            System.out.println("\n" + databaseColumns(":\t", ":", true));
 
             while (roundsPlayed.next()) {
                 System.out.println(roundsPlayed.getInt(COLUMN_ROUND)
-                    + "\t\t" + roundsPlayed.getInt(COLUMN_PLAYERS[0])
-                    + "\t\t" + roundsPlayed.getInt(COLUMN_PLAYERS[1])
-                    + "\t\t" + roundsPlayed.getInt(COLUMN_PLAYERS[2])
-                    + "\t\t" + roundsPlayed.getInt(COLUMN_PLAYERS[3])
+                    + databaseTabulator(COLUMN_ROUND) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[0]))
+                    + databaseTabulator(shave(COLUMN_PLAYERS[0])) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[1]))
+                    + databaseTabulator(shave(COLUMN_PLAYERS[1])) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[2]))
+                    + databaseTabulator(shave(COLUMN_PLAYERS[2])) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[3]))
                 );
             }
 
@@ -87,9 +87,12 @@ public class HeartsDB extends GameDB {
         close();
     }
 
-    private StringBuilder databaseColumns(String inBetween, String last) {
+    private StringBuilder databaseColumns(String inBetween, String last, boolean areQuotesRemoved) {
         StringBuilder columns = new StringBuilder(COLUMN_ROUND);
         for (String string : COLUMN_PLAYERS) {
+            if (areQuotesRemoved) {
+                string = removeQuotes(string).trim();
+            }
             columns.append(inBetween).append(string);
         }
         columns.append(last);
@@ -97,5 +100,7 @@ public class HeartsDB extends GameDB {
         return columns;
     }
 
-
+    private String shave(String customer) {
+        return removeQuotes(customer).trim();
+    }
 }

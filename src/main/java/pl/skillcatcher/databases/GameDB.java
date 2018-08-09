@@ -76,9 +76,13 @@ abstract public class GameDB {
 
     String databaseTabulator(String columnName) {
         StringBuilder tab = new StringBuilder();
-        for (int i = 0; i < ((columnName.length()-1)/4 + 1); i++) {
+        for (int i = 0; i < ((columnName.length()+1)/4 + 1); i++) {
             tab.append("\t");
         }
         return tab.toString();
+    }
+
+    String shave(String customer) {
+        return removeQuotes(customer).trim();
     }
 }

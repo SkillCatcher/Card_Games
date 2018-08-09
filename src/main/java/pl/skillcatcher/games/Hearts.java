@@ -15,11 +15,39 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
     private boolean heartsAllowed;
     private HeartsDB db;
 
+    public Card[] getPool() {
+        return pool;
+    }
+
+    public void setPool(Card[] pool) {
+        this.pool = pool;
+    }
+
+    public boolean isHeartsAllowed() {
+        return heartsAllowed;
+    }
+
+    public void setHeartsAllowed(boolean heartsAllowed) {
+        this.heartsAllowed = heartsAllowed;
+    }
+
+    public HeartsDB getDb() {
+        return db;
+    }
+
+    void setDb(HeartsDB db) {
+        this.db = db;
+    }
+
     public Hearts(int numberOfHumanPlayers, String[] playersNames) {
         setGameStatus(GameStatus.BEFORE_SETUP);
         setNumberOfAllPlayers(4);
         this.heartsAllowed = false;
-        setNumberOfHumanPlayers(numberOfHumanPlayers);
+        if (numberOfHumanPlayers > getNumberOfAllPlayers()) {
+            throw new IllegalArgumentException("Too much human players - 4 is maximum");
+        } else {
+            setNumberOfHumanPlayers(numberOfHumanPlayers);
+        }
         setDeck(new Deck());
         setCurrentRound(1);
         this.pool = new Card[getNumberOfAllPlayers()];
@@ -107,8 +135,22 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         setGameStatus(GameStatus.PLAYER_MOVING);
     }
 
+    private void displayPool() {
+        for (int i = 0; i < pool.length; i++) {
+            if (pool[i] == null) {
+                System.out.println((i+1) + ". ---");
+            } else {
+                System.out.println((i+1) + ". " + pool[i].getName() + " (" + getPlayers()[i].getName() + ")");
+            }
+        }
+    }
+
     @Override
     void makeMove(Player player) throws GameFlowException {
+        if (!player.getPlayerStatus().equals(PlayerStatus.USER)) {
+            throw new IllegalArgumentException("Wrong kind of player");
+        }
+
         if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -142,6 +184,10 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
 
     @Override
     void virtualPlayerMove(Player playerAI) throws GameFlowException {
+        if (!playerAI.getPlayerStatus().equals(PlayerStatus.AI)) {
+            throw new IllegalArgumentException("Wrong kind of player");
+        }
+
         if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -473,16 +519,6 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
             }
         }
         return true;
-    }
-
-    private void displayPool() {
-        for (int i = 0; i < pool.length; i++) {
-            if (pool[i] == null) {
-                System.out.println((i+1) + ". ---");
-            } else {
-                System.out.println((i+1) + ". " + pool[i].getName() + " (" + getPlayers()[i].getName() + ")");
-            }
-        }
     }
 
     private void resetGameSettings() {

@@ -70,7 +70,7 @@ public class HeartsDB extends GameDB {
 
             while (roundsPlayed.next()) {
                 System.out.println(roundsPlayed.getInt(COLUMN_ROUND)
-                    + databaseTabulator(COLUMN_ROUND) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[0]))
+                    + "\t\t" + roundsPlayed.getInt(shave(COLUMN_PLAYERS[0]))
                     + databaseTabulator(shave(COLUMN_PLAYERS[0])) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[1]))
                     + databaseTabulator(shave(COLUMN_PLAYERS[1])) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[2]))
                     + databaseTabulator(shave(COLUMN_PLAYERS[2])) + roundsPlayed.getInt(shave(COLUMN_PLAYERS[3]))
@@ -98,9 +98,5 @@ public class HeartsDB extends GameDB {
         columns.append(last);
 
         return columns;
-    }
-
-    private String shave(String customer) {
-        return removeQuotes(customer).trim();
     }
 }

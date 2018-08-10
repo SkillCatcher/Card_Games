@@ -61,12 +61,7 @@ public class Hand extends Deck {
     }
 
     private void sortCardsById() {
-        class IdComparator implements Comparator<Card> {
-            public int compare(Card o1, Card o2) {
-                return Integer.compare(o1.getId(), o2.getId());
-            }
-        }
-        getCards().sort(new IdComparator());
+        getCards().sort(Comparator.comparing(Card::getId));
     }
 
     private void sortCardsByColour() {

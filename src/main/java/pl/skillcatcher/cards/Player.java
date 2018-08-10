@@ -42,6 +42,10 @@ public class Player {
         return this.hand.getCollectedCards();
     }
 
+    public void setCollectedCards(List<Card> collectedCards) {
+        this.getHand().setCollectedCards(collectedCards);
+    }
+
     public Player(String name, int id) {
         this.name = name;
         this.id = id;

@@ -8,7 +8,6 @@ import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 
 class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
 
@@ -30,10 +29,6 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
         return dealer;
     }
 
-    public void setDealer(Player dealer) {
-        this.dealer = dealer;
-    }
-
     ArrayList<Player> getNotFinishedPlayers() {
         return notFinishedPlayers;
     }
@@ -48,10 +43,6 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
 
     void setListOfPlayersToRemove(ArrayList<Player> listOfPlayersToRemove) {
         this.listOfPlayersToRemove = listOfPlayersToRemove;
-    }
-
-    public BlackjackDB getDb() {
-        return db;
     }
 
     void setDb(BlackjackDB db) {
@@ -321,13 +312,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
             }
             verdict = "\nWINNER: " + winner.getName().toUpperCase() + "!!!";
         } else {
-            class PointsComparator implements Comparator<Player> {
-                @Override
-                public int compare(Player o1, Player o2) {
-                    return Integer.compare(o2.getPoints(), o1.getPoints());
-                }
-            }
-            Arrays.sort(getPlayers(), new PointsComparator());
+            Arrays.sort(getPlayers(), (Player p1, Player p2) -> Integer.compare(p2.getPoints(), p1.getPoints()));
 
             int scoreboardIndex = 1;
             for (Player player : getPlayers()) {

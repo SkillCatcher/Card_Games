@@ -9,30 +9,28 @@ import pl.skillcatcher.interfaces.PlayersCreator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck {
     private Card[] pool;
     private boolean heartsAllowed;
     private HeartsDB db;
 
-    public Card[] getPool() {
+    Card[] getPool() {
         return pool;
     }
 
-    public void setPool(Card[] pool) {
+    void setPool(Card[] pool) {
         this.pool = pool;
     }
 
-    public boolean isHeartsAllowed() {
+    boolean isHeartsAllowed() {
         return heartsAllowed;
     }
 
-    public void setHeartsAllowed(boolean heartsAllowed) {
+    void setHeartsAllowed(boolean heartsAllowed) {
         this.heartsAllowed = heartsAllowed;
-    }
-
-    public HeartsDB getDb() {
-        return db;
     }
 
     void setDb(HeartsDB db) {
@@ -49,7 +47,7 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
             setNumberOfHumanPlayers(numberOfHumanPlayers);
         }
         setDeck(new Deck());
-        setCurrentRound(1);
+        setCurrentRound(0);
         this.pool = new Card[getNumberOfAllPlayers()];
         setPlayers(new Player[getNumberOfAllPlayers()]);
         if (numberOfHumanPlayers > playersNames.length) {
@@ -73,6 +71,8 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         if (!getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
             throw new GameFlowException("Can't continue the game");
         }
+
+        setCurrentRound(getCurrentRound() + 1);
         getDeck().setAllCardValues(0);
         getDeck().setCardValuesByColor(CardColour.HEARTS, 1);
         getDeck().setSingleCardValueById(43, 13);
@@ -194,11 +194,11 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
 
         Hand playableCards = new Hand();
 
-        for (Card card : playerAI.getCards()) {
-            if (canBePlayed(playerAI.getHand(), card)) {
-                playableCards.getCards().add(card);
-            }
-        }
+        List<Card> playable = playerAI.getCards().stream()
+                .filter(card -> canBePlayed(playerAI.getHand(), card))
+                .collect(Collectors.toList());
+
+        playableCards.setCards(playable);
 
         int cardIdChoice = (int)Math.floor(Math.random()*playableCards.getCards().size());
         Card card = playableCards.getACard(cardIdChoice);
@@ -228,6 +228,14 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
             setGameStatus(GameStatus.PLAYER_READY);
         } else {
             setGameStatus(GameStatus.ROUND_DONE);
+        }
+    }
+
+    private void checkForEnablingHearts() {
+        for (Card card : pool) {
+            if (card.getColour().equals(CardColour.HEARTS)) {
+                heartsAllowed = true;
+            }
         }
     }
 
@@ -281,21 +289,11 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
-        boolean endGame = false;
-        int[] pointsBeforeThisRound = new int[getNumberOfAllPlayers()];
-        for (Player player : getPlayers()) {
-            pointsBeforeThisRound[player.getId()] = player.getPoints();
-        }
-        updatePoints();
-        System.out.println("Points after round " + getCurrentRound() + ":");
-        for (int i = 0; i < getPlayers().length; i++) {
-            System.out.println((i+1) + ". " + getPlayers()[i].getName() + ": " + getPlayers()[i].getPoints()
-                    + " (in this round: " + (getPlayers()[i].getPoints() - pointsBeforeThisRound[i]) + ")");
-            if (getPlayers()[i].getPoints() >= 100) {
-                endGame = true;
-            }
-        }
 
+        updatePoints();
+        boolean endGame = Arrays.stream(getPlayers()).anyMatch(player -> player.getPoints() >= 100);
+
+        System.out.println("Scoreboard");
         db.saveCurrentRoundToTheTable(getCurrentRound(), getPlayers());
         db.displayTable();
 
@@ -303,7 +301,6 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         if (endGame) {
             setGameStatus(GameStatus.GAME_DONE);
         } else {
-            setCurrentRound(getCurrentRound() + 1);
             resetGameSettings();
             setGameStatus(GameStatus.BEFORE_SETUP);
         }
@@ -441,14 +438,6 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
                 return 2;
             default:
                 return 0;
-        }
-    }
-
-    private void checkForEnablingHearts() {
-        for (Card card : pool) {
-            if (card.getColour().equals(CardColour.HEARTS)) {
-                heartsAllowed = true;
-            }
         }
     }
 

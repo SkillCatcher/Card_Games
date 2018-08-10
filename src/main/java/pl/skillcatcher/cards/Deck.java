@@ -23,7 +23,7 @@ public class Deck {
         }
     }
 
-    public Deck(int firstCardId, int lastCardId) throws IllegalArgumentException {
+    Deck(int firstCardId, int lastCardId) throws IllegalArgumentException {
         if (firstCardId > -1 && lastCardId < 52) {
             for (int i = firstCardId; i < lastCardId+1; i++) {
                 cards.add(new Card(i));
@@ -31,7 +31,12 @@ public class Deck {
         } else {
             throw new IllegalArgumentException();
         }
+    }
 
+    public Deck(int[] cardIds) {
+        for (int i : cardIds) {
+            cards.add(new Card(i));
+        }
     }
 
     public void dealACard(Hand hand) throws NullPointerException {

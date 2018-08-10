@@ -72,11 +72,11 @@ abstract class Game {
         this.userAttention = userAttention;
     }
 
-    public GameStatus getGameStatus() {
+    GameStatus getGameStatus() {
         return gameStatus;
     }
 
-    public void setGameStatus(GameStatus gameStatus) {
+    void setGameStatus(GameStatus gameStatus) {
         this.gameStatus = gameStatus;
     }
 

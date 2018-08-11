@@ -1,4 +1,4 @@
-package pl.skillcatcher.cards;
+package pl.skillcatcher.features;
 
 import java.util.ArrayList;
 import java.util.Collections;

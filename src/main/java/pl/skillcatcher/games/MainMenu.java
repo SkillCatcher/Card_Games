@@ -1,14 +1,13 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.Player;
-import pl.skillcatcher.cards.PlayerStatus;
-import pl.skillcatcher.cards.UserAttention;
+import pl.skillcatcher.features.Player;
+import pl.skillcatcher.features.PlayerStatus;
+import pl.skillcatcher.features.UserInteraction;
 import pl.skillcatcher.exceptions.GameFlowException;
-import pl.skillcatcher.interfaces.CorrectIntInputCheck;
 import pl.skillcatcher.interfaces.NameSetter;
 
-public class MainMenu implements CorrectIntInputCheck, NameSetter {
-    private UserAttention userAttention = new UserAttention();
+public class MainMenu implements NameSetter {
+    private UserInteraction userInteraction = new UserInteraction();
     private int numberOfPlayers;
 
     public MainMenu() {
@@ -17,7 +16,7 @@ public class MainMenu implements CorrectIntInputCheck, NameSetter {
                 + "\n\t2. Hearts"
                 + "\nMore games in progress :)");
         try {
-            start(intInputWithCheck("To choose your game, press it's number from the list " +
+            start(userInteraction.intInputWithCheck("To choose your game, press it's number from the list " +
                             "(or you can press 0 to quit)", 0, 2));
         } catch (GameFlowException e) {
             System.out.println(e.getMessage());
@@ -32,10 +31,10 @@ public class MainMenu implements CorrectIntInputCheck, NameSetter {
                 break;
             case 1:
                 System.out.println("Let's play BlackJack!");
-                userAttention.confirm();
-                numberOfPlayers = intInputWithCheck("Please choose a number of players " +
+                userInteraction.confirm();
+                numberOfPlayers = userInteraction.intInputWithCheck("Please choose a number of players " +
                         "(between 1 and 7):", 1, 7);
-                int numberOfRounds = intInputWithCheck("Please choose a number of rounds you " +
+                int numberOfRounds = userInteraction.intInputWithCheck("Please choose a number of rounds you " +
                         " want to play (between 1 and 100):", 1, 100);
 
                 BlackJack blackJack = new BlackJack(numberOfPlayers, numberOfRounds, setNames(numberOfPlayers));
@@ -79,8 +78,8 @@ public class MainMenu implements CorrectIntInputCheck, NameSetter {
                 break;
             case 2:
                 System.out.println("Let's play Hearts!");
-                userAttention.confirm();
-                numberOfPlayers = intInputWithCheck("Please choose the number of HUMAN players " +
+                userInteraction.confirm();
+                numberOfPlayers = userInteraction.intInputWithCheck("Please choose the number of HUMAN players " +
                         "- between 0 (if you just want to watch and press enter) and 4 (all human players):",
                         0, 4);
 

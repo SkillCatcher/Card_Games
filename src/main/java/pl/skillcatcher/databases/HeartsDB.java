@@ -1,6 +1,6 @@
 package pl.skillcatcher.databases;
 
-import pl.skillcatcher.cards.Player;
+import pl.skillcatcher.features.Player;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

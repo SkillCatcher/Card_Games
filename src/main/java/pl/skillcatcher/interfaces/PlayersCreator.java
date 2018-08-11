@@ -1,7 +1,7 @@
 package pl.skillcatcher.interfaces;
 
-import pl.skillcatcher.cards.Player;
-import pl.skillcatcher.cards.PlayerStatus;
+import pl.skillcatcher.features.Player;
+import pl.skillcatcher.features.PlayerStatus;
 
 public interface PlayersCreator {
     default void createPlayers(Player[] players, String[] names) {

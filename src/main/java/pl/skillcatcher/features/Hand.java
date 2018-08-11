@@ -1,4 +1,4 @@
-package pl.skillcatcher.cards;
+package pl.skillcatcher.features;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ public class Hand extends Deck {
 
     @Override
     public void dealACard(Hand hand) {
-        System.out.println("Dealing cards from player's hand is not allowed. Try 'playACard' method instead.");
+        System.out.println("Dealing features from player's hand is not allowed. Try 'playACard' method instead.");
     }
 
     public Card playACard(int cardIndex) {

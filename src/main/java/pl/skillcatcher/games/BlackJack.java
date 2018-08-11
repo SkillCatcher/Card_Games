@@ -1,15 +1,14 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.*;
+import pl.skillcatcher.features.*;
 import pl.skillcatcher.databases.BlackjackDB;
 import pl.skillcatcher.exceptions.GameFlowException;
-import pl.skillcatcher.interfaces.CorrectIntInputCheck;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
+class BlackJack extends Game implements PlayersCreator {
 
     private int roundsToPlay;
     private Player dealer;
@@ -139,7 +138,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
             throw new GameFlowException("Can't continue the game");
         }
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN\n");
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
 
         displayOpponentsHands(player);
 
@@ -191,7 +190,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
         if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
             throw new GameFlowException("Can't continue the game");
         }
-        int choice = intInputWithCheck("Do you want a hit or do you want to stay? " +
+        int choice = getUserInteraction().intInputWithCheck("Do you want a hit or do you want to stay? " +
                 "[Press 1 or 2, and confirm with ENTER]\n" +
                 "1 - Hit me! (Draw another card)\n" +
                 "2 - I'm good - I'll stay (End your turn)", 1, 2);
@@ -203,7 +202,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
                 break;
             case 2:
                 System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
-                getUserAttention().confirm();
+                getUserInteraction().confirm();
                 listOfPlayersToRemove.add(player);
                 setGameStatus(GameStatus.PLAYER_READY);
                 break;
@@ -217,7 +216,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
         if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
         decreaseAceValue(player);
         System.out.println("\nDealer currently has this hand: ");
         player.getHand().displayHand();
@@ -243,7 +242,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
         }
         ArrayList<Player> winners = new ArrayList<>();
         System.out.println("\nResults:\n");
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
 
         System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
 
@@ -298,7 +297,7 @@ class BlackJack extends Game implements PlayersCreator, CorrectIntInputCheck {
             throw new GameFlowException("Can't print final score");
         }
         System.out.println("\nFinal result:");
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
         dealer.setPoints(dealer.getPoints() / getNumberOfHumanPlayers());
         Player winner;
         String verdict;

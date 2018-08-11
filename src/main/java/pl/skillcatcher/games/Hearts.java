@@ -1,9 +1,8 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.*;
+import pl.skillcatcher.features.*;
 import pl.skillcatcher.databases.HeartsDB;
 import pl.skillcatcher.exceptions.GameFlowException;
-import pl.skillcatcher.interfaces.CorrectIntInputCheck;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck {
+public class Hearts extends Game implements PlayersCreator {
     private Card[] pool;
     private boolean heartsAllowed;
     private HeartsDB db;
@@ -114,6 +113,17 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         }
     }
 
+    private Player whoGotTwoOfClubs() {
+        for (Player player : getPlayers()) {
+            for (Card card : player.getCards()) {
+                if (card.getId() == 0) {
+                    return player;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     void currentSituation(Player player) throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
@@ -122,12 +132,12 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
 
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
 
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
             System.out.println("Cards in the game so far:");
             displayPool();
-            getUserAttention().confirm();
+            getUserInteraction().confirm();
             System.out.println(player.getName() + " - your hand:");
             player.getHand().displayHand();
         }
@@ -155,7 +165,8 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
             throw new GameFlowException("Can't continue the game");
         }
 
-        int choice = intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
+        int choice = getUserInteraction()
+                .intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
 
         while (!canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
             System.out.println("Sorry - you can't play that card, because:");
@@ -170,12 +181,12 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
             if (!canBePlayed_FirstRoundRule(player.getHand(), player.getHand().getACard(choice-1))) {
                 System.out.println("- it's first deal: "
                         + "\n\ta) it has to start with Two of Clubs"
-                        + "\n\tb) cards with points are not allowed");
+                        + "\n\tb) features with points are not allowed");
             }
 
             System.out.println("\nPlease choose again...");
-            getUserAttention().confirm();
-            choice = intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
+            getUserInteraction().confirm();
+            choice = getUserInteraction().intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
         }
 
         pool[player.getId()] = player.getHand().playACard(choice);
@@ -214,12 +225,12 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         }
 
         System.out.println("\nEnd of deal");
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
         System.out.println("\nCards in game:");
         displayPool();
         Player winner = poolWinner();
         System.out.println("This pool goes to " + winner.getName().toUpperCase());
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
         checkForEnablingHearts();
         winner.getHand().collectCards(pool);
         setCurrentPlayer(winner);
@@ -297,7 +308,7 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         db.saveCurrentRoundToTheTable(getCurrentRound(), getPlayers());
         db.displayTable();
 
-        getUserAttention().confirm();
+        getUserInteraction().confirm();
         if (endGame) {
             setGameStatus(GameStatus.GAME_DONE);
         } else {
@@ -331,17 +342,6 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         Arrays.sort(getPlayers(), new pointsComparator());
     }
 
-    private Player whoGotTwoOfClubs() {
-        for (Player player : getPlayers()) {
-            for (Card card : player.getCards()) {
-                if (card.getId() == 0) {
-                    return player;
-                }
-            }
-        }
-        return null;
-    }
-
     private void cardsPassExecute(Player receivingPlayer, ArrayList<Card> cards) {
         for (Card card : cards) {
             receivingPlayer.getCards().add(card);
@@ -362,7 +362,7 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
                 }
             }
 
-            int choice = intInputWithCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
+            int choice = getUserInteraction().intInputWithCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
                         1, 13);
 
             for (int i = 0; i < numberOfCardsChosen; i++) {
@@ -391,19 +391,19 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
             cardSets.add(i, new ArrayList<>());
 
             System.out.println("Card Pass Turn for player: " + getPlayers()[i].getName());
-            getUserAttention().confirm();
+            getUserInteraction().confirm();
 
             if (getPlayers()[i].getPlayerStatus().equals(PlayerStatus.USER)) {
                 System.out.println("Your hand:");
                 getPlayers()[i].getHand().displayHand();
 
-                System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
+                System.out.println("Choose 3 features from the list by their number (if you want to reverse the pick, " +
                         "simply pick the same card again). They'll be passed to "
                         + getPlayers()[( i + gameRotation() ) % 4].getName() + ": \n");
 
                 cardPassChoice(getPlayers()[i], cardSets.get(i));
                 printCardChoices(cardSets.get(i));
-                getUserAttention().confirm();
+                getUserInteraction().confirm();
 
                 for (Card card : cardSets.get(i)) {
                     getPlayers()[i].getCards().remove(card);
@@ -518,3 +518,6 @@ public class Hearts extends Game implements PlayersCreator, CorrectIntInputCheck
         }
     }
 }
+
+
+//TODO: NEW CLASSES - POOL, CARD_PASS

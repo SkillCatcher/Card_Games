@@ -1,4 +1,4 @@
-package pl.skillcatcher.cards;
+package pl.skillcatcher.features;
 
 public class Card {
 

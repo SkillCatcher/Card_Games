@@ -1,9 +1,19 @@
-package pl.skillcatcher.interfaces;
+package pl.skillcatcher.features;
 
 import java.util.Scanner;
 
-public interface CorrectIntInputCheck {
-    default int intInputWithCheck(String message, int min, int max) {
+public class UserInteraction {
+
+    public UserInteraction() {
+    }
+
+    public void confirm() {
+        System.out.println("To continue, press Enter (or write anything in the console - it doesn't matter)");
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
+    }
+
+    public int intInputWithCheck(String message, int min, int max) {
         System.out.println("\n" + message);
         Scanner scanner = new Scanner(System.in);
         if (scanner.hasNextInt()) {

@@ -1,8 +1,8 @@
 package pl.skillcatcher.games;
 
-import pl.skillcatcher.cards.Deck;
-import pl.skillcatcher.cards.Player;
-import pl.skillcatcher.cards.UserAttention;
+import pl.skillcatcher.features.Deck;
+import pl.skillcatcher.features.Player;
+import pl.skillcatcher.features.UserInteraction;
 import pl.skillcatcher.exceptions.GameFlowException;
 
 abstract class Game {
@@ -13,7 +13,7 @@ abstract class Game {
     private int numberOfAllPlayers;
     private Player currentPlayer;
     private Player[] players;
-    private UserAttention userAttention = new UserAttention();
+    private UserInteraction userInteraction = new UserInteraction();
     private GameStatus gameStatus;
 
     Deck getDeck() {
@@ -64,12 +64,12 @@ abstract class Game {
         this.players = players;
     }
 
-    UserAttention getUserAttention() {
-        return userAttention;
+    UserInteraction getUserInteraction() {
+        return userInteraction;
     }
 
-    void setUserAttention(UserAttention userAttention) {
-        this.userAttention = userAttention;
+    void setUserInteraction(UserInteraction userInteraction) {
+        this.userInteraction = userInteraction;
     }
 
     GameStatus getGameStatus() {

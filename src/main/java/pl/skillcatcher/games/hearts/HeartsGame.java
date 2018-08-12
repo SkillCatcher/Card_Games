@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class HeartsGame extends Game implements PlayersCreator {
     private HeartsDB db;
     private HeartsTable heartsTable;
+    private CardPassing cardPassing;
 
     public HeartsTable getHeartsTable() {
         return heartsTable;
@@ -27,6 +27,14 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     public void setDb(HeartsDB db) {
         this.db = db;
+    }
+
+    public CardPassing getCardPassing() {
+        return cardPassing;
+    }
+
+    public void setCardPassing(CardPassing cardPassing) {
+        this.cardPassing = cardPassing;
     }
 
     public HeartsGame(int numberOfHumanPlayers, String[] playersNames) {
@@ -92,8 +100,17 @@ public class HeartsGame extends Game implements PlayersCreator {
             throw new GameFlowException("Can't continue the game");
         }
 
-        if (gameRotation() != 0) {
-            cardPassTurn();
+        cardPassing = new CardPassing(getPlayers(), getCurrentRound());
+
+        if (cardPassing.getGameRotation() != 0) {
+            for (Player player : getPlayers()) {
+                cardPassing.cardPassTurn(player);
+            }
+
+            for (Player player : getPlayers()) {
+                cardPassing.cardsPassExecute(getPlayers()[(player.getId() + cardPassing.getGameRotation()) % 4],
+                        cardPassing.getCardTrios().get(player.getId()));
+            }
         }
 
         setCurrentPlayer(whoGotTwoOfClubs());
@@ -307,105 +324,6 @@ public class HeartsGame extends Game implements PlayersCreator {
         Arrays.sort(getPlayers(), new pointsComparator());
     }
 
-    private void cardsPassExecute(Player receivingPlayer, ArrayList<Card> cards) {
-        for (Card card : cards) {
-            receivingPlayer.getCards().add(card);
-        }
-    }
-
-    private void cardPassChoice(Player player, ArrayList<Card> cardSet) {
-        final int numberOfCardsToPass = 3;
-        int numberOfCardsChosen = 0;
-
-        while (numberOfCardsChosen < numberOfCardsToPass) {
-            boolean cardPickedFirstTime = true;
-
-            if (numberOfCardsChosen > 0) {
-                System.out.println("Your choices so far...");
-                for (int i = 0; i < numberOfCardsChosen; i++) {
-                    System.out.println((i+1) + ". " + cardSet.get(i).getName());
-                }
-            }
-
-            int choice = getUserInteraction().intInputWithCheck("Choose card number " + (numberOfCardsChosen+1) + ":",
-                        1, 13);
-
-            for (int i = 0; i < numberOfCardsChosen; i++) {
-                if (cardSet.get(i).equals(player.getCard(choice-1))) {
-                    cardPickedFirstTime = false;
-                    break;
-                }
-            }
-
-            if (cardPickedFirstTime) {
-                cardSet.add(player.getCard(choice - 1));
-                numberOfCardsChosen++;
-            } else {
-                System.out.println("Choice of " + player.getCard(choice-1).getName()
-                        + " was cancelled.");
-                cardSet.remove(player.getCard(choice-1));
-                numberOfCardsChosen--;
-            }
-        }
-    }
-
-    private void cardPassTurn() {
-        ArrayList<ArrayList<Card>> cardSets = new ArrayList<>();
-
-        for (int i = 0; i < 4; i++) {
-            cardSets.add(i, new ArrayList<>());
-
-            System.out.println("Card Pass Turn for player: " + getPlayers()[i].getName());
-            getUserInteraction().confirm();
-
-            if (getPlayers()[i].getPlayerStatus().equals(PlayerStatus.USER)) {
-                System.out.println("Your hand:");
-                getPlayers()[i].getHand().displayHand();
-
-                System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
-                        "simply pick the same card again). They'll be passed to "
-                        + getPlayers()[( i + gameRotation() ) % 4].getName() + ": \n");
-
-                cardPassChoice(getPlayers()[i], cardSets.get(i));
-                printCardChoices(cardSets.get(i));
-                getUserInteraction().confirm();
-
-                for (Card card : cardSets.get(i)) {
-                    getPlayers()[i].getCards().remove(card);
-                }
-            } else if (getPlayers()[i].getPlayerStatus().equals(PlayerStatus.AI)) {
-                for (int a = 0; a < 3; a++) {
-                    Card card = getPlayers()[i].getCard(
-                            (int)Math.floor(Math.random()*getPlayers()[i].getCards().size()));
-                    cardSets.get(i).add(card);
-                    getPlayers()[i].getCards().remove(card);
-                }
-            }
-        }
-
-        for (int i = 0; i < 4; i++) {
-            cardsPassExecute(getPlayers()[(i + gameRotation()) % 4], cardSets.get(i));
-        }
-    }
-
-    private void printCardChoices(ArrayList<Card> cardSet) {
-        System.out.println("You've chosen: ");
-        for (Card card : cardSet) System.out.println(card.getName());
-    }
-
-    private int gameRotation() {
-        switch(getCurrentRound()%4) {
-            case 1:
-                return 1;
-            case 2:
-                return 3;
-            case 3:
-                return 2;
-            default:
-                return 0;
-        }
-    }
-
     private void resetGameSettings() {
         heartsTable.setHeartsAllowed(false);
         setDeck(new Deck());
@@ -414,6 +332,3 @@ public class HeartsGame extends Game implements PlayersCreator {
         }
     }
 }
-
-
-//TODO: NEW CLASSES - CARD_PASS

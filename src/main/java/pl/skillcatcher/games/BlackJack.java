@@ -72,7 +72,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void dealCards() {
+    public void dealCards() {
         getDeck().shuffle();
         for (Player player : getPlayers()) {
             getDeck().dealACard(player.getHand());
@@ -83,7 +83,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void setUpGame() throws GameFlowException {
+    public void setUpGame() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
             throw new GameFlowException("Can't set up the game");
         }
@@ -106,7 +106,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void startTheGame() throws GameFlowException {
+    public void startTheGame() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -133,7 +133,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void currentSituation(Player player) throws GameFlowException {
+    public void currentSituation(Player player) throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -186,7 +186,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void makeMove(Player player) throws GameFlowException {
+    public void makeMove(Player player) throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -212,7 +212,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void virtualPlayerMove(Player player) throws GameFlowException {
+    public void virtualPlayerMove(Player player) throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -236,7 +236,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void printResults() throws GameFlowException {
+    public void printResults() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -292,7 +292,7 @@ class BlackJack extends Game implements PlayersCreator {
     }
 
     @Override
-    void printFinalScore() throws GameFlowException {
+    public void printFinalScore() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.GAME_DONE)) {
             throw new GameFlowException("Can't print final score");
         }

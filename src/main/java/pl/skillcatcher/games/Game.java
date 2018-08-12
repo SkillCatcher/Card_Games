@@ -5,7 +5,7 @@ import pl.skillcatcher.features.Player;
 import pl.skillcatcher.features.UserInteraction;
 import pl.skillcatcher.exceptions.GameFlowException;
 
-abstract class Game {
+public abstract class Game {
 
     private Deck deck;
     private int currentRound;
@@ -16,77 +16,77 @@ abstract class Game {
     private UserInteraction userInteraction = new UserInteraction();
     private GameStatus gameStatus;
 
-    Deck getDeck() {
+    public Deck getDeck() {
         return deck;
     }
 
-    void setDeck(Deck deck) {
+    public void setDeck(Deck deck) {
         this.deck = deck;
     }
 
-    int getCurrentRound() {
+    public int getCurrentRound() {
         return currentRound;
     }
 
-    void setCurrentRound(int currentRound) {
+    public void setCurrentRound(int currentRound) {
         this.currentRound = currentRound;
     }
 
-    int getNumberOfHumanPlayers() {
+    public int getNumberOfHumanPlayers() {
         return numberOfHumanPlayers;
     }
 
-    void setNumberOfHumanPlayers(int numberOfHumanPlayers) {
+    public void setNumberOfHumanPlayers(int numberOfHumanPlayers) {
         this.numberOfHumanPlayers = numberOfHumanPlayers;
     }
 
-    int getNumberOfAllPlayers() {
+    public int getNumberOfAllPlayers() {
         return numberOfAllPlayers;
     }
 
-    void setNumberOfAllPlayers(int numberOfAllPlayers) {
+    public void setNumberOfAllPlayers(int numberOfAllPlayers) {
         this.numberOfAllPlayers = numberOfAllPlayers;
     }
 
-    Player getCurrentPlayer() {
+    public Player getCurrentPlayer() {
         return currentPlayer;
     }
 
-    void setCurrentPlayer(Player currentPlayer) {
+    public void setCurrentPlayer(Player currentPlayer) {
         this.currentPlayer = currentPlayer;
     }
 
-    Player[] getPlayers() {
+    public Player[] getPlayers() {
         return players;
     }
 
-    void setPlayers(Player[] players) {
+    public void setPlayers(Player[] players) {
         this.players = players;
     }
 
-    UserInteraction getUserInteraction() {
+    public UserInteraction getUserInteraction() {
         return userInteraction;
     }
 
-    void setUserInteraction(UserInteraction userInteraction) {
+    public void setUserInteraction(UserInteraction userInteraction) {
         this.userInteraction = userInteraction;
     }
 
-    GameStatus getGameStatus() {
+    public GameStatus getGameStatus() {
         return gameStatus;
     }
 
-    void setGameStatus(GameStatus gameStatus) {
+    public void setGameStatus(GameStatus gameStatus) {
         this.gameStatus = gameStatus;
     }
 
-    abstract void setUpGame() throws GameFlowException;
-    abstract void dealCards();
-    abstract void startTheGame() throws GameFlowException;
-    abstract void currentSituation(Player player) throws GameFlowException;
-    abstract void makeMove(Player player) throws GameFlowException;
-    abstract void virtualPlayerMove(Player playerAI) throws GameFlowException;
-    abstract void printResults() throws GameFlowException;
-    abstract void printFinalScore() throws GameFlowException;
+    public abstract void setUpGame() throws GameFlowException;
+    public abstract void dealCards();
+    public abstract void startTheGame() throws GameFlowException;
+    public abstract void currentSituation(Player player) throws GameFlowException;
+    public abstract void makeMove(Player player) throws GameFlowException;
+    public abstract void virtualPlayerMove(Player playerAI) throws GameFlowException;
+    public abstract void printResults() throws GameFlowException;
+    public abstract void printFinalScore() throws GameFlowException;
 
 }

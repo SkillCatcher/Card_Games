@@ -25,7 +25,7 @@ public class HeartsDB extends GameDB {
 
             statement.close();
         } catch (SQLException e) {
-            System.out.println("Can't create a new Hearts table - " + e.getMessage());
+            System.out.println("Can't create a new HeartsGame table - " + e.getMessage());
             e.printStackTrace();
         }
 

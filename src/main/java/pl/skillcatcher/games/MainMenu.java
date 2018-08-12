@@ -4,6 +4,7 @@ import pl.skillcatcher.features.Player;
 import pl.skillcatcher.features.PlayerStatus;
 import pl.skillcatcher.features.UserInteraction;
 import pl.skillcatcher.exceptions.GameFlowException;
+import pl.skillcatcher.games.hearts.HeartsGame;
 import pl.skillcatcher.interfaces.NameSetter;
 
 public class MainMenu implements NameSetter {
@@ -83,53 +84,53 @@ public class MainMenu implements NameSetter {
                         "- between 0 (if you just want to watch and press enter) and 4 (all human players):",
                         0, 4);
 
-                Hearts hearts = new Hearts(numberOfPlayers, setNames(numberOfPlayers));
+                HeartsGame heartsGame = new HeartsGame(numberOfPlayers, setNames(numberOfPlayers));
 
-                while (hearts.getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
-                    hearts.setUpGame();
+                while (heartsGame.getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
+                    heartsGame.setUpGame();
 
-                    if (hearts.getGameStatus().equals(GameStatus.AFTER_SETUP)) {
-                        hearts.startTheGame();
+                    if (heartsGame.getGameStatus().equals(GameStatus.AFTER_SETUP)) {
+                        heartsGame.startTheGame();
                     } else {
                         throw new GameFlowException("Can't start the game");
                     }
 
-                    while (hearts.getGameStatus().equals(GameStatus.PLAYER_READY)) {
+                    while (heartsGame.getGameStatus().equals(GameStatus.PLAYER_READY)) {
 
-                        for (int i = 0; i < hearts.getPlayers().length; i++) {
+                        for (int i = 0; i < heartsGame.getPlayers().length; i++) {
 
-                            Player player = hearts.getPlayers()[(hearts.getCurrentPlayer().getId() + i) % 4];
+                            Player player = heartsGame.getPlayers()[(heartsGame.getCurrentPlayer().getId() + i) % 4];
 
-                            if (hearts.getGameStatus().equals(GameStatus.PLAYER_READY)) {
-                                hearts.currentSituation(player);
+                            if (heartsGame.getGameStatus().equals(GameStatus.PLAYER_READY)) {
+                                heartsGame.currentSituation(player);
                             } else {
                                 throw new GameFlowException("Can't display current situation");
                             }
 
-                            if (hearts.getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
+                            if (heartsGame.getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
                                 if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
-                                    hearts.makeMove(player);
+                                    heartsGame.makeMove(player);
                                 } else {
-                                    hearts.virtualPlayerMove(player);
+                                    heartsGame.virtualPlayerMove(player);
                                 }
                             } else {
                                 throw new GameFlowException("Can't make a move");
                             }
                         }
 
-                        hearts.setGameStatus(GameStatus.ALL_PLAYERS_DONE);
-                        hearts.moveResult();
+                        heartsGame.setGameStatus(GameStatus.ALL_PLAYERS_DONE);
+                        heartsGame.moveResult();
                     }
 
-                    if (hearts.getGameStatus().equals(GameStatus.ROUND_DONE)) {
-                        hearts.printResults();
+                    if (heartsGame.getGameStatus().equals(GameStatus.ROUND_DONE)) {
+                        heartsGame.printResults();
                     } else {
                         throw new GameFlowException("Can't play another round or print results from current one");
                     }
                 }
 
-                if (hearts.getGameStatus().equals(GameStatus.GAME_DONE)) {
-                    hearts.printFinalScore();
+                if (heartsGame.getGameStatus().equals(GameStatus.GAME_DONE)) {
+                    heartsGame.printFinalScore();
                 } else {
                     throw new GameFlowException("Can't print the final score");
                 }

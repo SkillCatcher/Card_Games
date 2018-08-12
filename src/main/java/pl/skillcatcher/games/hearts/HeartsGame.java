@@ -1,8 +1,10 @@
-package pl.skillcatcher.games;
+package pl.skillcatcher.games.hearts;
 
 import pl.skillcatcher.features.*;
 import pl.skillcatcher.databases.HeartsDB;
 import pl.skillcatcher.exceptions.GameFlowException;
+import pl.skillcatcher.games.Game;
+import pl.skillcatcher.games.GameStatus;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
@@ -11,35 +13,25 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Hearts extends Game implements PlayersCreator {
-    private Card[] pool;
-    private boolean heartsAllowed;
+public class HeartsGame extends Game implements PlayersCreator {
     private HeartsDB db;
+    private HeartsTable heartsTable;
 
-    Card[] getPool() {
-        return pool;
+    public HeartsTable getHeartsTable() {
+        return heartsTable;
     }
 
-    void setPool(Card[] pool) {
-        this.pool = pool;
+    public void setHeartsTable(HeartsTable heartsTable) {
+        this.heartsTable = heartsTable;
     }
 
-    boolean isHeartsAllowed() {
-        return heartsAllowed;
-    }
-
-    void setHeartsAllowed(boolean heartsAllowed) {
-        this.heartsAllowed = heartsAllowed;
-    }
-
-    void setDb(HeartsDB db) {
+    public void setDb(HeartsDB db) {
         this.db = db;
     }
 
-    public Hearts(int numberOfHumanPlayers, String[] playersNames) {
+    public HeartsGame(int numberOfHumanPlayers, String[] playersNames) {
         setGameStatus(GameStatus.BEFORE_SETUP);
         setNumberOfAllPlayers(4);
-        this.heartsAllowed = false;
         if (numberOfHumanPlayers > getNumberOfAllPlayers()) {
             throw new IllegalArgumentException("Too much human players - 4 is maximum");
         } else {
@@ -47,7 +39,7 @@ public class Hearts extends Game implements PlayersCreator {
         }
         setDeck(new Deck());
         setCurrentRound(0);
-        this.pool = new Card[getNumberOfAllPlayers()];
+        this.heartsTable = new HeartsTable();
         setPlayers(new Player[getNumberOfAllPlayers()]);
         if (numberOfHumanPlayers > playersNames.length) {
             throw new ArrayIndexOutOfBoundsException("List of names (" + playersNames.length +
@@ -85,7 +77,7 @@ public class Hearts extends Game implements PlayersCreator {
     }
 
     @Override
-    void dealCards() {
+    public void dealCards() {
         getDeck().shuffle();
         while (getDeck().getCards().size() > 0) {
             for (Player player : getPlayers()) {
@@ -95,7 +87,7 @@ public class Hearts extends Game implements PlayersCreator {
     }
 
     @Override
-    void startTheGame() throws GameFlowException {
+    public void startTheGame() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -125,7 +117,7 @@ public class Hearts extends Game implements PlayersCreator {
     }
 
     @Override
-    void currentSituation(Player player) throws GameFlowException {
+    public void currentSituation(Player player) throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -136,7 +128,7 @@ public class Hearts extends Game implements PlayersCreator {
 
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
             System.out.println("Cards in the game so far:");
-            displayPool();
+            heartsTable.displayCards();
             getUserInteraction().confirm();
             System.out.println(player.getName() + " - your hand:");
             player.getHand().displayHand();
@@ -145,18 +137,8 @@ public class Hearts extends Game implements PlayersCreator {
         setGameStatus(GameStatus.PLAYER_MOVING);
     }
 
-    private void displayPool() {
-        for (int i = 0; i < pool.length; i++) {
-            if (pool[i] == null) {
-                System.out.println((i+1) + ". ---");
-            } else {
-                System.out.println((i+1) + ". " + pool[i].getName() + " (" + getPlayers()[i].getName() + ")");
-            }
-        }
-    }
-
     @Override
-    void makeMove(Player player) throws GameFlowException {
+    public void makeMove(Player player) throws GameFlowException {
         if (!player.getPlayerStatus().equals(PlayerStatus.USER)) {
             throw new IllegalArgumentException("Wrong kind of player");
         }
@@ -168,33 +150,36 @@ public class Hearts extends Game implements PlayersCreator {
         int choice = getUserInteraction()
                 .intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
 
-        while (!canBePlayed(player.getHand(), player.getHand().getACard(choice-1))) {
+        while (!heartsTable.canBePlayed(player.getHand(), player.getCard(choice-1), getCurrentPlayer())) {
             System.out.println("Sorry - you can't play that card, because:");
-            if (!canBePlayed_ColourRule(player.getHand(), player.getHand().getACard(choice-1))) {
+            if (!heartsTable.canBePlayed_ColourRule(player.getHand(), player.getCard(choice-1),
+                    getCurrentPlayer())) {
                 System.out.println("- card's colour doesn't match with color of the first card");
             }
 
-            if (!canBePlayed_HeartsRule(player.getHand(), player.getHand().getACard(choice-1))) {
+            if (!heartsTable.canBePlayed_HeartsRule(player.getHand(), player.getHand().getACard(choice-1))) {
                 System.out.println("- hearts still aren't allowed");
             }
 
-            if (!canBePlayed_FirstRoundRule(player.getHand(), player.getHand().getACard(choice-1))) {
+            if (!heartsTable.canBePlayed_FirstRoundRule(player.getHand(), player.getHand().getACard(choice-1))) {
                 System.out.println("- it's first deal: "
                         + "\n\ta) it has to start with Two of Clubs"
-                        + "\n\tb) features with points are not allowed");
+                        + "\n\tb) cards with points are not allowed");
             }
 
             System.out.println("\nPlease choose again...");
             getUserInteraction().confirm();
-            choice = getUserInteraction().intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
+            choice = getUserInteraction().intInputWithCheck("Pick a card: ", 1,
+                    player.getHand().getCards().size());
         }
 
-        pool[player.getId()] = player.getHand().playACard(choice);
+        Card playedCard = player.getHand().playACard(choice);
+        heartsTable.setCard(player, playedCard);
         setGameStatus(GameStatus.PLAYER_READY);
     }
 
     @Override
-    void virtualPlayerMove(Player playerAI) throws GameFlowException {
+    public void virtualPlayerMove(Player playerAI) throws GameFlowException {
         if (!playerAI.getPlayerStatus().equals(PlayerStatus.AI)) {
             throw new IllegalArgumentException("Wrong kind of player");
         }
@@ -205,21 +190,24 @@ public class Hearts extends Game implements PlayersCreator {
 
         Hand playableCards = new Hand();
 
-        List<Card> playable = playerAI.getCards().stream()
-                .filter(card -> canBePlayed(playerAI.getHand(), card))
-                .collect(Collectors.toList());
+        List<Card> playable = new ArrayList<>();
+        for (Card card1 : playerAI.getCards()) {
+            if (heartsTable.canBePlayed(playerAI.getHand(), card1, getCurrentPlayer())) {
+                playable.add(card1);
+            }
+        }
 
         playableCards.setCards(playable);
 
         int cardIdChoice = (int)Math.floor(Math.random()*playableCards.getCards().size());
         Card card = playableCards.getACard(cardIdChoice);
-        pool[playerAI.getId()] = card;
+        heartsTable.setCard(playerAI, card);
         playerAI.getCards().remove(card);
 
         setGameStatus(GameStatus.PLAYER_READY);
     }
 
-    void moveResult() throws GameFlowException {
+    public void moveResult() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -227,12 +215,12 @@ public class Hearts extends Game implements PlayersCreator {
         System.out.println("\nEnd of deal");
         getUserInteraction().confirm();
         System.out.println("\nCards in game:");
-        displayPool();
-        Player winner = poolWinner();
+        heartsTable.displayCards();
+        Player winner = heartsTable.getWinner(getPlayers(), getCurrentPlayer());
         System.out.println("This pool goes to " + winner.getName().toUpperCase());
         getUserInteraction().confirm();
-        checkForEnablingHearts();
-        winner.getHand().collectCards(pool);
+        heartsTable.checkForEnablingHearts();
+        winner.getHand().collectCards(heartsTable);
         setCurrentPlayer(winner);
 
         if (getCurrentPlayer().getCards().size() > 0) {
@@ -240,29 +228,6 @@ public class Hearts extends Game implements PlayersCreator {
         } else {
             setGameStatus(GameStatus.ROUND_DONE);
         }
-    }
-
-    private void checkForEnablingHearts() {
-        for (Card card : pool) {
-            if (card.getColour().equals(CardColour.HEARTS)) {
-                heartsAllowed = true;
-            }
-        }
-    }
-
-    private Player poolWinner() {
-        int winnerIndex = getCurrentPlayer().getId();
-        Card winningCard = pool[getCurrentPlayer().getId()];
-        CardColour validColour = pool[getCurrentPlayer().getId()].getColour();
-        for (int i = 1; i < pool.length; i++) {
-            if(pool[(getCurrentPlayer().getId()+i)%4].getColour().equals(validColour)) {
-                if(pool[(getCurrentPlayer().getId()+i)%4].getId() > winningCard.getId()) {
-                    winningCard = pool[(getCurrentPlayer().getId()+i)%4];
-                    winnerIndex = (getCurrentPlayer().getId()+i)%4;
-                }
-            }
-        }
-        return getPlayers()[winnerIndex];
     }
 
     private void updatePoints() {
@@ -296,7 +261,7 @@ public class Hearts extends Game implements PlayersCreator {
     }
 
     @Override
-    void printResults() throws GameFlowException {
+    public void printResults() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -318,7 +283,7 @@ public class Hearts extends Game implements PlayersCreator {
     }
 
     @Override
-    void printFinalScore() throws GameFlowException {
+    public void printFinalScore() throws GameFlowException {
         if (!getGameStatus().equals(GameStatus.GAME_DONE)) {
             throw new GameFlowException("Can't continue the game");
         }
@@ -397,7 +362,7 @@ public class Hearts extends Game implements PlayersCreator {
                 System.out.println("Your hand:");
                 getPlayers()[i].getHand().displayHand();
 
-                System.out.println("Choose 3 features from the list by their number (if you want to reverse the pick, " +
+                System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
                         "simply pick the same card again). They'll be passed to "
                         + getPlayers()[( i + gameRotation() ) % 4].getName() + ": \n");
 
@@ -441,77 +406,8 @@ public class Hearts extends Game implements PlayersCreator {
         }
     }
 
-    private boolean canBePlayed(Hand hand, Card card) {
-        return canBePlayed_ColourRule(hand, card) && canBePlayed_HeartsRule(hand, card)
-                && canBePlayed_FirstRoundRule(hand, card);
-    }
-
-    private boolean canBePlayed_ColourRule(Hand hand, Card card) {
-        if (Arrays.stream(pool).noneMatch(cardInPool -> cardInPool != null)) {
-            return true;
-        } else if (pool[getCurrentPlayer().getId()].getColour().equals(card.getColour())) {
-            return true;
-        } else {
-            return hand.getCards().stream()
-                    .noneMatch(cardInHand -> cardInHand.getColour().
-                            equals(pool[getCurrentPlayer().getId()].getColour()));
-        }
-    }
-
-    private boolean canBePlayed_HeartsRule(Hand hand, Card card) {
-        if (Arrays.stream(pool).noneMatch(cardInPool -> cardInPool != null)) {
-            if (heartsAllowed || containsOnlyHearts(hand)) {
-                return true;
-            } else {
-                return !card.getColour().equals(CardColour.HEARTS);
-            }
-        } else {
-            return true;
-        }
-
-    }
-
-    private boolean canBePlayed_FirstRoundRule(Hand hand, Card card) {
-        if (hand.getCards().size() < 13 || containsOnlyCardsWithPoints(hand)) {
-            return true;
-        } else if (card.getColour().equals(CardColour.HEARTS) || card.getId() == 43) {
-            return false;
-        } else if (containsTwoOfClubs(hand)) {
-            return card.getId() == 0;
-        } else {
-            return true;
-        }
-    }
-
-    private boolean containsTwoOfClubs(Hand hand) {
-        for (Card card : hand.getCards()) {
-            if (card.getId() == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean containsOnlyCardsWithPoints(Hand hand) {
-        for (Card card : hand.getCards()) {
-            if (!(card.getId() == 43 || card.getColour().equals(CardColour.HEARTS))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean containsOnlyHearts(Hand hand) {
-        for (Card card : hand.getCards()) {
-            if (!(card.getColour().equals(CardColour.HEARTS))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void resetGameSettings() {
-        heartsAllowed = false;
+        heartsTable.setHeartsAllowed(false);
         setDeck(new Deck());
         for (Player player : getPlayers()) {
             player.setHand(new Hand());
@@ -520,4 +416,4 @@ public class Hearts extends Game implements PlayersCreator {
 }
 
 
-//TODO: NEW CLASSES - POOL, CARD_PASS
+//TODO: NEW CLASSES - CARD_PASS

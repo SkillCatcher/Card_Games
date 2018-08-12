@@ -1,9 +1,8 @@
 package pl.skillcatcher.features;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import pl.skillcatcher.games.hearts.HeartsTable;
+
+import java.util.*;
 
 public class Hand extends Deck {
 
@@ -53,11 +52,11 @@ public class Hand extends Deck {
         System.out.println("Current points: " + getPoints() + "\n");
     }
 
-    public void collectCards(Card[] pool) {
-        collectedCards.addAll(Arrays.asList(pool));
-        for (int i = 0; i < pool.length; i++) {
-            Arrays.asList(pool).set(i, null);
+    public void collectCards(HeartsTable heartsTable) {
+        for (int i = 0; i < heartsTable.getCards().size(); i++) {
+            collectedCards.add(heartsTable.getCard(i));
         }
+        heartsTable.clear();
     }
 
     private void sortCardsById() {
@@ -85,5 +84,23 @@ public class Hand extends Deck {
             sortedHand.addAll(temp.getCards());
         }
         setCards(sortedHand);
+    }
+
+    public boolean containsOnlyOneColor(CardColour cardColour) {
+        for (Card card : getCards()) {
+            if (!(card.getColour().equals(cardColour))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean containsCard(int cardId) {
+        for (Card card : getCards()) {
+            if (card.getId() == cardId) {
+                return true;
+            }
+        }
+        return false;
     }
 }

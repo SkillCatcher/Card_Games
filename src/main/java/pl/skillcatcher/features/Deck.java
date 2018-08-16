@@ -23,7 +23,7 @@ public class Deck {
         }
     }
 
-    Deck(int firstCardId, int lastCardId) throws IllegalArgumentException {
+    public Deck(int firstCardId, int lastCardId) throws IllegalArgumentException {
         if (firstCardId > -1 && lastCardId < 52) {
             for (int i = firstCardId; i < lastCardId+1; i++) {
                 cards.add(new Card(i));

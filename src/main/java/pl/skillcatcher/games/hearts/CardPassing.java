@@ -17,7 +17,7 @@ public class CardPassing {
         this.userInteraction = userInteraction;
     }
 
-    ArrayList<ArrayList<Card>> getCardTrios() {
+    public ArrayList<ArrayList<Card>> getCardTrios() {
         return cardTrios;
     }
 
@@ -64,11 +64,11 @@ public class CardPassing {
         }
     }
 
-    int getGameRotation() {
+    public int getGameRotation() {
         return gameRotation();
     }
 
-    void cardPassTurn(Player player) {
+    private void cardPassTurn(Player player) {
         System.out.println("Card Pass Turn for player: " + player.getName());
         userInteraction.confirm();
 
@@ -106,7 +106,7 @@ public class CardPassing {
         for (Card card : cardTrio) System.out.println(card.getName());
     }
 
-    void cardsPassExecute(Player receivingPlayer, ArrayList<Card> cardTrio) {
+    private void cardsPassExecute(Player receivingPlayer, ArrayList<Card> cardTrio) {
         for (Card card : cardTrio) {
             receivingPlayer.getCards().add(card);
         }
@@ -145,6 +145,17 @@ public class CardPassing {
                 cardTrio.remove(player.getCard(choice-1));
                 numberOfCardsChosen--;
             }
+        }
+    }
+
+    public void cardPass() {
+        for (Player player : getPlayers()) {
+            cardPassTurn(player);
+        }
+
+        for (Player player : getPlayers()) {
+            cardsPassExecute(getPlayers()[(player.getId() + getGameRotation()) % 4],
+                    getCardTrios().get(player.getId()));
         }
     }
 }

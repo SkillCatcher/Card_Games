@@ -40,15 +40,18 @@ public class HeartsGame extends Game implements PlayersCreator {
     public HeartsGame(int numberOfHumanPlayers, String[] playersNames) {
         setGameStatus(GameStatus.BEFORE_SETUP);
         setNumberOfAllPlayers(4);
+
         if (numberOfHumanPlayers > getNumberOfAllPlayers()) {
             throw new IllegalArgumentException("Too much human players - 4 is maximum");
         } else {
             setNumberOfHumanPlayers(numberOfHumanPlayers);
         }
+
         setDeck(new Deck());
         setCurrentRound(0);
-        this.heartsTable = new HeartsTable();
         setPlayers(new Player[getNumberOfAllPlayers()]);
+        this.heartsTable = new HeartsTable();
+
         if (numberOfHumanPlayers > playersNames.length) {
             throw new ArrayIndexOutOfBoundsException("List of names (" + playersNames.length +
                     " names) is too short for " + numberOfHumanPlayers + " players...");
@@ -62,14 +65,11 @@ public class HeartsGame extends Game implements PlayersCreator {
             };
             db = new HeartsDB(columnNames);
         }
-
     }
 
     @Override
     public void setUpGame() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.BEFORE_SETUP);
 
         setCurrentRound(getCurrentRound() + 1);
         getDeck().setAllCardValues(0);
@@ -79,6 +79,8 @@ public class HeartsGame extends Game implements PlayersCreator {
         if (getCurrentRound() == 1) {
             db.setUpNewTable();
         }
+
+        cardPassing = new CardPassing(getPlayers(), getCurrentRound());
 
         dealCards();
         setGameStatus(GameStatus.AFTER_SETUP);
@@ -96,21 +98,10 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void startTheGame() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.AFTER_SETUP);
 
-        cardPassing = new CardPassing(getPlayers(), getCurrentRound());
-
-        if (cardPassing.getGameRotation() != 0) {
-            for (Player player : getPlayers()) {
-                cardPassing.cardPassTurn(player);
-            }
-
-            for (Player player : getPlayers()) {
-                cardPassing.cardsPassExecute(getPlayers()[(player.getId() + cardPassing.getGameRotation()) % 4],
-                        cardPassing.getCardTrios().get(player.getId()));
-            }
+        if (cardPassing.getGameRotation() != 0) { //2, 3
+            cardPassing.cardPass();
         }
 
         setCurrentPlayer(whoGotTwoOfClubs());
@@ -135,9 +126,7 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void currentSituation(Player player) throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.PLAYER_READY);
 
         System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
                 + "\nOther players - no peeking :)\n");
@@ -156,13 +145,8 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void makeMove(Player player) throws GameFlowException {
-        if (!player.getPlayerStatus().equals(PlayerStatus.USER)) {
-            throw new IllegalArgumentException("Wrong kind of player");
-        }
-
-        if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkPlayerStatus(PlayerStatus.USER, player);
+        checkStatus(GameStatus.PLAYER_MOVING);
 
         int choice = getUserInteraction()
                 .intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
@@ -190,20 +174,14 @@ public class HeartsGame extends Game implements PlayersCreator {
                     player.getHand().getCards().size());
         }
 
-        Card playedCard = player.getHand().playACard(choice);
-        heartsTable.setCard(player, playedCard);
+        heartsTable.setCard(player, player.getHand().playACard(choice));
         setGameStatus(GameStatus.PLAYER_READY);
     }
 
     @Override
     public void virtualPlayerMove(Player playerAI) throws GameFlowException {
-        if (!playerAI.getPlayerStatus().equals(PlayerStatus.AI)) {
-            throw new IllegalArgumentException("Wrong kind of player");
-        }
-
-        if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkPlayerStatus(PlayerStatus.AI, playerAI);
+        checkStatus(GameStatus.PLAYER_MOVING);
 
         Hand playableCards = new Hand();
 
@@ -225,9 +203,7 @@ public class HeartsGame extends Game implements PlayersCreator {
     }
 
     public void moveResult() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.ALL_PLAYERS_DONE);
 
         System.out.println("\nEnd of deal");
         getUserInteraction().confirm();
@@ -279,9 +255,7 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void printResults() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.ROUND_DONE);
 
         updatePoints();
         boolean endGame = Arrays.stream(getPlayers()).anyMatch(player -> player.getPoints() >= 100);
@@ -301,9 +275,8 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void printFinalScore() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.GAME_DONE)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.GAME_DONE);
+
         sortPlayersByPoints();
         Player winner = getPlayers()[0];
         int i = 0;
@@ -329,6 +302,18 @@ public class HeartsGame extends Game implements PlayersCreator {
         setDeck(new Deck());
         for (Player player : getPlayers()) {
             player.setHand(new Hand());
+        }
+    }
+
+    private void checkStatus(GameStatus gameStatus) throws GameFlowException {
+        if (!getGameStatus().equals(gameStatus)) {
+            throw new GameFlowException("Can't continue the game");
+        }
+    }
+
+    private void checkPlayerStatus(PlayerStatus playerStatus, Player player) {
+        if (!player.getPlayerStatus().equals(playerStatus)) {
+            throw new IllegalArgumentException("Wrong kind of player");
         }
     }
 }

@@ -1,5 +1,6 @@
 package pl.skillcatcher.features;
 
+import pl.skillcatcher.games.CardsOnTable;
 import pl.skillcatcher.games.hearts.HeartsTable;
 
 import java.util.*;
@@ -52,11 +53,11 @@ public class Hand extends Deck {
         System.out.println("Current points: " + getPoints() + "\n");
     }
 
-    public void collectCards(HeartsTable heartsTable) {
-        for (int i = 0; i < heartsTable.getCards().size(); i++) {
-            collectedCards.add(heartsTable.getCard(i));
+    public void collectCards(CardsOnTable cardsOnTable) {
+        for (int i = 0; i < cardsOnTable.getCards().size(); i++) {
+            collectedCards.add(cardsOnTable.getCard(i));
         }
-        heartsTable.clear();
+        cardsOnTable.clear();
     }
 
     private void sortCardsById() {

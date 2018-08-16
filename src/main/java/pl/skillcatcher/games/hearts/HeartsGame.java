@@ -100,7 +100,7 @@ public class HeartsGame extends Game implements PlayersCreator {
     public void startTheGame() throws GameFlowException {
         checkStatus(GameStatus.AFTER_SETUP);
 
-        if (cardPassing.getGameRotation() != 0) { //2, 3
+        if (cardPassing.getGameRotation() != 0) {
             cardPassing.cardPass();
         }
 

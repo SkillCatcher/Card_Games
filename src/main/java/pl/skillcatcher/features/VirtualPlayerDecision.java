@@ -33,10 +33,8 @@ public class VirtualPlayerDecision {
         this.cardsOnTable = cardsOnTable;
     }
 
-    public VirtualPlayerDecision(Player virtualPlayer, CardsOnTable cardsOnTable) {
-        this.virtualPlayer = virtualPlayer;
+    public VirtualPlayerDecision() {
         this.playableCards = new Hand();
-        this.cardsOnTable = cardsOnTable;
     }
 
     public void filterPlayableCards(Player currentPlayer) {

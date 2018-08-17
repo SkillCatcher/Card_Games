@@ -16,6 +16,7 @@ public class HeartsGame extends Game implements PlayersCreator {
     private HeartsDB db;
     private HeartsTable heartsTable;
     private CardPassing cardPassing;
+    private VirtualPlayerDecision vpd;
 
     public HeartsTable getHeartsTable() {
         return heartsTable;
@@ -37,6 +38,14 @@ public class HeartsGame extends Game implements PlayersCreator {
         this.cardPassing = cardPassing;
     }
 
+    public VirtualPlayerDecision getVpd() {
+        return vpd;
+    }
+
+    public void setVpd(VirtualPlayerDecision vpd) {
+        this.vpd = vpd;
+    }
+
     public HeartsGame(int numberOfHumanPlayers, String[] playersNames) {
         setGameStatus(GameStatus.BEFORE_SETUP);
         setNumberOfAllPlayers(4);
@@ -51,6 +60,7 @@ public class HeartsGame extends Game implements PlayersCreator {
         setCurrentRound(0);
         setPlayers(new Player[getNumberOfAllPlayers()]);
         this.heartsTable = new HeartsTable();
+        this.vpd = new VirtualPlayerDecision();
 
         if (numberOfHumanPlayers > playersNames.length) {
             throw new ArrayIndexOutOfBoundsException("List of names (" + playersNames.length +
@@ -183,7 +193,8 @@ public class HeartsGame extends Game implements PlayersCreator {
         checkPlayerStatus(PlayerStatus.AI, playerAI);
         checkStatus(GameStatus.PLAYER_MOVING);
 
-        VirtualPlayerDecision vpd = new VirtualPlayerDecision(playerAI, heartsTable);
+        vpd.setVirtualPlayer(playerAI);
+        vpd.setCardsOnTable(heartsTable);
         vpd.filterPlayableCards(getCurrentPlayer());
         vpd.chooseCardToPlay(heartsTable);
 

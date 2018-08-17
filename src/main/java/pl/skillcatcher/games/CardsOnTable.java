@@ -1,6 +1,7 @@
 package pl.skillcatcher.games;
 
 import pl.skillcatcher.features.Card;
+import pl.skillcatcher.features.Hand;
 import pl.skillcatcher.features.Player;
 
 import java.util.LinkedHashMap;
@@ -38,6 +39,8 @@ public abstract class CardsOnTable {
     }
 
     abstract public Player getWinner(Player[] players, Player currentPlayer);
+
+    abstract public boolean canBePlayed(Hand hand, Card card, Player currentPlayer);
 
     public void displayCards() {
         for (int i = 0; i < 4; i++) {

@@ -37,8 +37,8 @@ public class Hand extends Deck {
     }
 
     public Card playACard(int cardIndex) {
-        Card chosenCard = getCards().get(cardIndex-1);
-        getCards().remove(cardIndex-1);
+        Card chosenCard = getCards().get(cardIndex);
+        getCards().remove(cardIndex);
         return chosenCard;
     }
 

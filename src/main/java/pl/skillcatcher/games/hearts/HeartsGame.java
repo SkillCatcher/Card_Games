@@ -174,7 +174,7 @@ public class HeartsGame extends Game implements PlayersCreator {
                     player.getHand().getCards().size());
         }
 
-        heartsTable.setCard(player, player.getHand().playACard(choice));
+        heartsTable.setCard(player, player.getHand().playACard(choice-1));
         setGameStatus(GameStatus.PLAYER_READY);
     }
 
@@ -183,21 +183,9 @@ public class HeartsGame extends Game implements PlayersCreator {
         checkPlayerStatus(PlayerStatus.AI, playerAI);
         checkStatus(GameStatus.PLAYER_MOVING);
 
-        Hand playableCards = new Hand();
-
-        List<Card> playable = new ArrayList<>();
-        for (Card card1 : playerAI.getCards()) {
-            if (heartsTable.canBePlayed(playerAI.getHand(), card1, getCurrentPlayer())) {
-                playable.add(card1);
-            }
-        }
-
-        playableCards.setCards(playable);
-
-        int cardIdChoice = (int)Math.floor(Math.random()*playableCards.getCards().size());
-        Card card = playableCards.getACard(cardIdChoice);
-        heartsTable.setCard(playerAI, card);
-        playerAI.getCards().remove(card);
+        VirtualPlayerDecision vpd = new VirtualPlayerDecision(playerAI, heartsTable);
+        vpd.filterPlayableCards(getCurrentPlayer());
+        vpd.chooseCardToPlay(heartsTable);
 
         setGameStatus(GameStatus.PLAYER_READY);
     }

@@ -9,7 +9,6 @@ import pl.skillcatcher.games.CardsOnTable;
 public class HeartsTable extends CardsOnTable {
     private boolean heartsAllowed;
 
-
     public HeartsTable() {
         super();
         this.heartsAllowed = false;

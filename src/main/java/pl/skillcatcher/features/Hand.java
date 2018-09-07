@@ -1,7 +1,6 @@
 package pl.skillcatcher.features;
 
 import pl.skillcatcher.games.CardsOnTable;
-import pl.skillcatcher.games.hearts.HeartsTable;
 
 import java.util.*;
 

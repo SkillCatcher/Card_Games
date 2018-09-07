@@ -196,7 +196,7 @@ public class HeartsGame extends Game implements PlayersCreator {
         vpd.setVirtualPlayer(playerAI);
         vpd.setCardsOnTable(heartsTable);
         vpd.filterPlayableCards(getCurrentPlayer());
-        vpd.chooseCardToPlay(heartsTable);
+        vpd.chooseCardToPlay();
 
         setGameStatus(GameStatus.PLAYER_READY);
     }

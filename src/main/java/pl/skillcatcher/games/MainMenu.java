@@ -4,6 +4,7 @@ import pl.skillcatcher.features.Player;
 import pl.skillcatcher.features.PlayerStatus;
 import pl.skillcatcher.features.UserInteraction;
 import pl.skillcatcher.exceptions.GameFlowException;
+import pl.skillcatcher.games.blackjack.BlackJack;
 import pl.skillcatcher.games.hearts.HeartsGame;
 import pl.skillcatcher.interfaces.NameSetter;
 
@@ -47,7 +48,7 @@ public class MainMenu implements NameSetter {
                         blackJack.startTheGame();
 
                         if (blackJack.getGameStatus().equals(GameStatus.PLAYER_READY)) {
-                            for (Player player : blackJack.getNotFinishedPlayers()) {
+                            for (Player player : blackJack.getPlayersInGame().getNotFinishedPlayers()) {
                                 blackJack.currentSituation(player);
                                 if (blackJack.getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
                                     blackJack.makeMove(player);

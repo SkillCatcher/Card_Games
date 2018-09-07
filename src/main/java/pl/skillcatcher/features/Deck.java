@@ -84,4 +84,8 @@ public class Deck {
             card.setValue(value);
         }
     }
+
+    public int getSize() {
+        return cards.size();
+    }
 }

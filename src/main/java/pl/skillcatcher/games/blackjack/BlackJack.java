@@ -1,19 +1,21 @@
-package pl.skillcatcher.games;
+package pl.skillcatcher.games.blackjack;
 
 import pl.skillcatcher.features.*;
 import pl.skillcatcher.databases.BlackjackDB;
 import pl.skillcatcher.exceptions.GameFlowException;
+import pl.skillcatcher.games.Game;
+import pl.skillcatcher.games.GameStatus;
+import pl.skillcatcher.games.PlayersInGame;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-class BlackJack extends Game implements PlayersCreator {
+public class BlackJack extends Game implements PlayersCreator {
 
     private int roundsToPlay;
     private Player dealer;
-    private ArrayList<Player> notFinishedPlayers;
-    private ArrayList<Player> listOfPlayersToRemove;
+    private PlayersInGame playersInGame;
     private BlackjackDB db;
 
     int getRoundsToPlay() {
@@ -24,31 +26,23 @@ class BlackJack extends Game implements PlayersCreator {
         this.roundsToPlay = roundsToPlay;
     }
 
-    Player getDealer() {
+    public Player getDealer() {
         return dealer;
     }
 
-    ArrayList<Player> getNotFinishedPlayers() {
-        return notFinishedPlayers;
+    public PlayersInGame getPlayersInGame() {
+        return playersInGame;
     }
 
-    void setNotFinishedPlayers(ArrayList<Player> notFinishedPlayers) {
-        this.notFinishedPlayers = notFinishedPlayers;
-    }
-
-    ArrayList<Player> getListOfPlayersToRemove() {
-        return listOfPlayersToRemove;
-    }
-
-    void setListOfPlayersToRemove(ArrayList<Player> listOfPlayersToRemove) {
-        this.listOfPlayersToRemove = listOfPlayersToRemove;
+    public void setPlayersInGame(PlayersInGame playersInGame) {
+        this.playersInGame = playersInGame;
     }
 
     void setDb(BlackjackDB db) {
         this.db = db;
     }
 
-    BlackJack(int numberOfHumanPlayers, int roundsToPlay, String[] playersNames) {
+    public BlackJack(int numberOfHumanPlayers, int roundsToPlay, String[] playersNames) {
         setDeck(new Deck());
         setNumberOfHumanPlayers(numberOfHumanPlayers);
         setNumberOfAllPlayers(getNumberOfHumanPlayers());
@@ -57,8 +51,7 @@ class BlackJack extends Game implements PlayersCreator {
         setCurrentRound(roundsToPlay - this.roundsToPlay);
 
         this.dealer = new Player("Dealer", -1, PlayerStatus.AI);
-        this.notFinishedPlayers = new ArrayList<>();
-        this.listOfPlayersToRemove = new ArrayList<>();
+        this.playersInGame = new PlayersInGame();
         setGameStatus(GameStatus.BEFORE_SETUP);
 
         setPlayers(new Player[getNumberOfAllPlayers()]);
@@ -101,7 +94,7 @@ class BlackJack extends Game implements PlayersCreator {
         dealCards();
 
         setCurrentPlayer(getPlayers()[roundsToPlay%getNumberOfHumanPlayers()]);
-        addToListFromCurrentPlayer(getPlayers(), notFinishedPlayers, getCurrentPlayer());
+        playersInGame.fillInFromCurrentPlayer(getPlayers(), getCurrentPlayer());
         setGameStatus(GameStatus.AFTER_SETUP);
     }
 
@@ -110,25 +103,13 @@ class BlackJack extends Game implements PlayersCreator {
         if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
             throw new GameFlowException("Can't continue the game");
         }
-        removePlayersFromList(notFinishedPlayers, listOfPlayersToRemove);
+        playersInGame.removePlayersFromList();
 
-        if (notFinishedPlayers.size() == 0) {
+        if (playersInGame.getNotFinishedPlayers().size() == 0) {
             System.out.println("\nDealer's turn...\n");
             setGameStatus(GameStatus.ALL_PLAYERS_DONE);
         } else {
             setGameStatus(GameStatus.PLAYER_READY);
-        }
-    }
-
-    private void addToListFromCurrentPlayer(Player[] allPlayers, ArrayList<Player> list, Player current) {
-        for (int i = current.getId(); i < allPlayers.length + current.getId(); i++) {
-            list.add(allPlayers[i % allPlayers.length]);
-        }
-    }
-
-    private void removePlayersFromList(ArrayList<Player> biggerList, ArrayList<Player> smallerList) {
-        for (Player player : smallerList) {
-            biggerList.remove(player);
         }
     }
 
@@ -155,7 +136,7 @@ class BlackJack extends Game implements PlayersCreator {
             System.out.println("Oops... your currently have " + player.getHand().getPoints() +
                     " points, which is more than 21. You've lost...");
 
-            listOfPlayersToRemove.add(player);
+            playersInGame.addToRemove(player);
         } else {
             setGameStatus(GameStatus.PLAYER_MOVING);
         }
@@ -203,7 +184,7 @@ class BlackJack extends Game implements PlayersCreator {
             case 2:
                 System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
                 getUserInteraction().confirm();
-                listOfPlayersToRemove.add(player);
+                playersInGame.addToRemove(player);
                 setGameStatus(GameStatus.PLAYER_READY);
                 break;
             default:
@@ -287,8 +268,7 @@ class BlackJack extends Game implements PlayersCreator {
             player.getCards().clear();
         }
         dealer.getCards().clear();
-        notFinishedPlayers.clear();
-        listOfPlayersToRemove.clear();
+        playersInGame.clear();
     }
 
     @Override

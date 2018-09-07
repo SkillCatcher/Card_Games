@@ -47,7 +47,7 @@ public class VirtualPlayerDecision {
         playableCards.setCards(playable);
     }
 
-    public void chooseCardToPlay(CardsOnTable cardsOnTable) {
+    public void chooseCardToPlay() {
         int cardIdChoice = (int)Math.floor(Math.random()*playableCards.getCards().size());
         Card card = playableCards.getACard(cardIdChoice);
         cardsOnTable.setCard(virtualPlayer, card);

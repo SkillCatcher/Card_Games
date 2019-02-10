@@ -41,7 +41,8 @@ public class Hand extends Deck {
         return chosenCard;
     }
 
-    public void displayHand() {
+    public void displayHand(String message) {
+        System.out.println(message);
         sortCardsByColour();
         for (int i = 0; i < getCards().size(); i++) {
             System.out.println(i+1 + ". " + getACard(i).getName());

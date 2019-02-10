@@ -14,35 +14,29 @@ public class HeartsTable extends CardsOnTable {
         this.heartsAllowed = false;
     }
 
-    public boolean isHeartsAllowed() {
-        return heartsAllowed;
-    }
-
     public void setHeartsAllowed(boolean heartsAllowed) {
         this.heartsAllowed = heartsAllowed;
     }
 
     @Override
     public Player getWinner(Player[] players, Player currentPlayer) {
-
         int winnerIndex = currentPlayer.getId();
-
         Card winningCard = getCard(winnerIndex);
-
         CardColour validColour = winningCard.getColour();
 
         for (int i = 1; i < getCards().size(); i++) {
             int comparedPlayerId = (currentPlayer.getId() + i) % 4;
-
-            if (getCard(comparedPlayerId).getColour().equals(validColour)) {
-                if (getCard(comparedPlayerId).getId() > winningCard.getId()) {
-                    winnerIndex = comparedPlayerId;
-                    winningCard = getCard(winnerIndex);
-                }
+            if (isCurrentWinningCardBeaten(comparedPlayerId, validColour, winningCard)) {
+                winnerIndex = comparedPlayerId;
+                winningCard = getCard(winnerIndex);
             }
         }
-
         return players[winnerIndex];
+    }
+
+    private boolean isCurrentWinningCardBeaten(int challengerID, CardColour winningColour, Card currentWinningCard) {
+        return getCard(challengerID).getColour().equals(winningColour)
+                && getCard(challengerID).getId() > currentWinningCard.getId();
     }
 
     public void checkForEnablingHearts() {
@@ -64,25 +58,32 @@ public class HeartsTable extends CardsOnTable {
         if (getCards().isEmpty()) {
             return true;
         } else {
-            CardColour validColor = getCard(currentPlayer.getId()).getColour();
-            if (card.getColour().equals(validColor)) {
-                return true;
-            } else {
-                return hand.getCards().stream()
-                        .noneMatch(cardInHand -> cardInHand.getColour().equals(validColor));
-            }
+            return canBePlayed_ColourRule_TableNotEmptyCase(currentPlayer, hand, card);
+        }
+    }
+
+    private boolean canBePlayed_ColourRule_TableNotEmptyCase(Player roundStarter, Hand hand, Card card) {
+        CardColour validColor = getCard(roundStarter.getId()).getColour();
+        if (card.getColour().equals(validColor)) {
+            return true;
+        } else {
+            return hand.getCards().stream().noneMatch(cardInHand -> cardInHand.getColour().equals(validColor));
         }
     }
 
     public boolean canBePlayed_HeartsRule(Hand hand, Card card) {
         if (getCards().isEmpty()) {
-            if (heartsAllowed || hand.containsOnlyOneColor(CardColour.HEARTS)) {
-                return true;
-            } else {
-                return !card.getColour().equals(CardColour.HEARTS);
-            }
+            return canBePlayed_HeartsRule_EmptyTableCase(hand, card);
         } else {
             return true;
+        }
+    }
+
+    private boolean canBePlayed_HeartsRule_EmptyTableCase(Hand hand, Card card) {
+        if (heartsAllowed || hand.containsOnlyOneColor(CardColour.HEARTS)) {
+            return true;
+        } else {
+            return !card.getColour().equals(CardColour.HEARTS);
         }
     }
 
@@ -106,5 +107,4 @@ public class HeartsTable extends CardsOnTable {
         }
         return true;
     }
-
 }

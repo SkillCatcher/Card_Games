@@ -45,7 +45,7 @@ public class PlayersInGame {
         listOfPlayersToRemove.clear();
     }
 
-    public void fillInFromCurrentPlayer(Player[] allPlayers, Player current) {
+    public void fillInPlayersInGameList(Player[] allPlayers, Player current) {
         for (int i = current.getId(); i < allPlayers.length + current.getId(); i++) {
             notFinishedPlayers.add(allPlayers[i % allPlayers.length]);
         }

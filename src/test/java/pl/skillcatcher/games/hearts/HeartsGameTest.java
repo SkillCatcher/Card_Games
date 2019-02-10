@@ -335,7 +335,7 @@ public class HeartsGameTest {
 
         testHeartsGame.moveResult();
 
-        verify(mockedHT, times(1)).displayCards();
+        verify(mockedHT, times(1)).displayCards(anyString());
     }
 
     @Test
@@ -443,7 +443,7 @@ public class HeartsGameTest {
 
     @Test(expected = GameFlowException.class)
     public void should_Not_Print_Results_With_Wrong_Status() throws GameFlowException {
-        testHeartsGame.setGameStatus(GameStatus.ROUND_DONE);
+        testHeartsGame.setGameStatus(GameStatus.PLAYER_READY);
         testHeartsGame.printResults();
     }
 

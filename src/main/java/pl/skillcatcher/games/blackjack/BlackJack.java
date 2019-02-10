@@ -3,6 +3,7 @@ package pl.skillcatcher.games.blackjack;
 import pl.skillcatcher.features.*;
 import pl.skillcatcher.databases.BlackjackDB;
 import pl.skillcatcher.exceptions.GameFlowException;
+import pl.skillcatcher.games.ConsoleMessages;
 import pl.skillcatcher.games.Game;
 import pl.skillcatcher.games.GameStatus;
 import pl.skillcatcher.games.PlayersInGame;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BlackJack extends Game implements PlayersCreator {
-
+    private ConsoleMessages messages = new ConsoleMessages();
     private int roundsToPlay;
     private Player dealer;
     private PlayersInGame playersInGame;
@@ -77,32 +78,23 @@ public class BlackJack extends Game implements PlayersCreator {
 
     @Override
     public void setUpGame() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.BEFORE_SETUP)) {
-            throw new GameFlowException("Can't set up the game");
-        }
+        checkStatus(GameStatus.BEFORE_SETUP);
         getDeck().setCardValuesByNumber(CardNumber.ACE, 11);
         getDeck().setCardValuesById(36, 47, 10);
-        for (int i = 0; i < 36; i++) {
-            getDeck().setSingleCardValueById(i, (i/4)+2);
-        }
+        for (int i = 0; i < 36; i++) getDeck().setSingleCardValueById(i, (i/4)+2);
 
-        if (getCurrentRound() == 0) {
-            db.setUpNewTable();
-        }
-
+        if (getCurrentRound() == 0) db.setUpNewTable();
         setCurrentRound(getCurrentRound()+1);
         dealCards();
 
         setCurrentPlayer(getPlayers()[roundsToPlay%getNumberOfHumanPlayers()]);
-        playersInGame.fillInFromCurrentPlayer(getPlayers(), getCurrentPlayer());
+        playersInGame.fillInPlayersInGameList(getPlayers(), getCurrentPlayer());
         setGameStatus(GameStatus.AFTER_SETUP);
     }
 
     @Override
     public void startTheGame() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.AFTER_SETUP)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.AFTER_SETUP);
         playersInGame.removePlayersFromList();
 
         if (playersInGame.getNotFinishedPlayers().size() == 0) {
@@ -115,27 +107,18 @@ public class BlackJack extends Game implements PlayersCreator {
 
     @Override
     public void currentSituation(Player player) throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.PLAYER_READY)) {
-            throw new GameFlowException("Can't continue the game");
-        }
-        System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN\n");
+        checkStatus(GameStatus.PLAYER_READY);
+        System.out.println(String.format(messages.TURN_START, player.getName().toUpperCase()));
         getUserInteraction().confirm();
 
         displayOpponentsHands(player);
-
-        System.out.println("You can see, that dealer's got a " +
-                dealer.getCard(0).getName() + ".\n");
-
+        System.out.println(String.format(messages.BLACKJACK_DEALER_CARD, dealer.getCard(0).getName()));
         decreaseAceValue(player);
-
-        System.out.println("Your current hand: ");
-        player.getHand().displayHand();
+        player.getHand().displayHand(messages.YOUR_HAND);
         player.getHand().displayPoints();
 
         if(failCheck(player)) {
-            System.out.println("Oops... your currently have " + player.getHand().getPoints() +
-                    " points, which is more than 21. You've lost...");
-
+            System.out.println(String.format(messages.BLACKJACK_OVER_21, player.getHand().getPoints()));
             playersInGame.addToRemove(player);
         } else {
             setGameStatus(GameStatus.PLAYER_MOVING);
@@ -159,8 +142,7 @@ public class BlackJack extends Game implements PlayersCreator {
     private void displayOpponentsHands(Player yourPlayer) {
         for (Player player : getPlayers()) {
             if (!player.equals(yourPlayer)) {
-                System.out.println("Hand of " + player.getName());
-                player.getHand().displayHand();
+                player.getHand().displayHand(String.format(messages.BLACKJACK_OTHER_HAND, player.getName()));
                 player.getHand().displayPoints();
             }
         }
@@ -168,21 +150,15 @@ public class BlackJack extends Game implements PlayersCreator {
 
     @Override
     public void makeMove(Player player) throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.PLAYER_MOVING)) {
-            throw new GameFlowException("Can't continue the game");
-        }
-        int choice = getUserInteraction().intInputWithCheck("Do you want a hit or do you want to stay? " +
-                "[Press 1 or 2, and confirm with ENTER]\n" +
-                "1 - Hit me! (Draw another card)\n" +
-                "2 - I'm good - I'll stay (End your turn)", 1, 2);
-
+        checkStatus(GameStatus.PLAYER_MOVING);
+        int choice = getUserInteraction().intInputWithCheck(messages.BLACKJACK_DECISION, 1, 2);
         switch (choice) {
             case 1:
                 getDeck().dealACard(player.getHand());
                 setGameStatus(GameStatus.PLAYER_READY);
                 break;
             case 2:
-                System.out.println("You've finished with " + player.getHand().getPoints() + " points.\n");
+                System.out.println(String.format(messages.BLACKJACK_STAY, player.getHand().getPoints()));
                 getUserInteraction().confirm();
                 playersInGame.addToRemove(player);
                 setGameStatus(GameStatus.PLAYER_READY);
@@ -194,41 +170,60 @@ public class BlackJack extends Game implements PlayersCreator {
 
     @Override
     public void virtualPlayerMove(Player player) throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.ALL_PLAYERS_DONE)) {
-            throw new GameFlowException("Can't continue the game");
-        }
+        checkStatus(GameStatus.ALL_PLAYERS_DONE);
         getUserInteraction().confirm();
         decreaseAceValue(player);
-        System.out.println("\nDealer currently has this hand: ");
-        player.getHand().displayHand();
+        player.getHand().displayHand(messages.BLACKJACK_DEALER_HAND);
         player.getHand().displayPoints();
-
         virtualPlayerDecision(player, player.getHand().getPoints());
     }
 
     private void virtualPlayerDecision(Player player, int playerPoints) {
         if (playerPoints < 17) {
-            System.out.println("Dealer draws another card...");
+            System.out.println(messages.BLACKJACK_DEALER_DRAW);
             getDeck().dealACard(player.getHand());
         } else {
-            System.out.println("Dealer ends game with " + player.getHand().getPoints() + " points");
+            System.out.println(String.format(messages.BLACKJACK_DEALER_STAY, player.getHand().getPoints()));
             setGameStatus(GameStatus.ROUND_DONE);
         }
     }
 
     @Override
     public void printResults() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.ROUND_DONE)) {
-            throw new GameFlowException("Can't continue the game");
-        }
-        ArrayList<Player> winners = new ArrayList<>();
-        System.out.println("\nResults:\n");
+        checkStatus(GameStatus.ROUND_DONE);
+        System.out.println(messages.BLACKJACK_RESULTS);
         getUserInteraction().confirm();
 
-        System.out.println(dealer.getName() + ": " + dealer.getHand().getPoints() + " points");
+        displayCurrentRoundPoints();
+        ArrayList<Player> winners = currentRoundWinners();
+        db.saveCurrentRoundIntoTable(getCurrentRound(), getPlayers(), dealer);
+        db.displayTable();
 
+        System.out.println(messages.BLACKJACK_ROUND_WINNERS);
+        for (Player player : winners) {
+            System.out.println(player.getName());
+        }
+        roundsToPlay--;
+
+        if (roundsToPlay > 0) {
+            setGameStatus(GameStatus.BEFORE_SETUP);
+            resetSettings();
+            System.out.println(String.format(messages.BLACKJACK_RESET, roundsToPlay));
+        } else {
+            setGameStatus(GameStatus.GAME_DONE);
+        }
+    }
+
+    private void displayCurrentRoundPoints() {
+        System.out.println(String.format(messages.SCOREBOARD_ROW, dealer.getName(), dealer.getHand().getPoints()));
         for (Player player : getPlayers()) {
-            System.out.println(player.getName() + ": " + player.getHand().getPoints() + " points");
+            System.out.println(String.format(messages.SCOREBOARD_ROW, player.getName(), player.getHand().getPoints()));
+        }
+    }
+
+    private ArrayList<Player> currentRoundWinners() {
+        ArrayList<Player> winners = new ArrayList<>();
+        for (Player player : getPlayers()) {
             if ( !failCheck(player) &&
                     (player.getHand().getPoints() > dealer.getHand().getPoints() || failCheck(dealer)) ) {
                 winners.add(player);
@@ -243,23 +238,7 @@ public class BlackJack extends Game implements PlayersCreator {
                 dealer.addPoints(1);
             }
         }
-
-        db.saveCurrentRoundIntoTable(getCurrentRound(), getPlayers(), dealer);
-        db.displayTable();
-
-        System.out.println("\nWinners of this round:");
-        for (Player player : winners) {
-            System.out.println(player.getName());
-        }
-        roundsToPlay--;
-
-        if (roundsToPlay > 0) {
-            setGameStatus(GameStatus.BEFORE_SETUP);
-            resetSettings();
-            System.out.println("\n" + roundsToPlay + " rounds left...");
-        } else {
-            setGameStatus(GameStatus.GAME_DONE);
-        }
+        return winners;
     }
 
     private void resetSettings() {
@@ -273,54 +252,68 @@ public class BlackJack extends Game implements PlayersCreator {
 
     @Override
     public void printFinalScore() throws GameFlowException {
-        if (!getGameStatus().equals(GameStatus.GAME_DONE)) {
-            throw new GameFlowException("Can't print final score");
-        }
-        System.out.println("\nFinal result:");
+        checkStatus(GameStatus.GAME_DONE);
+        System.out.println(messages.BLACKJACK_FINAL_RESULTS);
         getUserInteraction().confirm();
         dealer.setPoints(dealer.getPoints() / getNumberOfHumanPlayers());
-        Player winner;
-        String verdict;
+        System.out.println(String.format(messages.BLACKJACK_DEALER_FINAL_POINTS, dealer.getPoints()));
 
         if (getPlayers().length == 1) {
-            System.out.println("\n" + getPlayers()[0].getName() + ": " + getPlayers()[0].getPoints() + " points");
-            if (dealer.getPoints() > getPlayers()[0].getPoints()) {
-                winner = dealer;
-            } else {
-                winner = getPlayers()[0];
-            }
-            verdict = "\nWINNER: " + winner.getName().toUpperCase() + "!!!";
+            System.out.println(singlePlayerFinalResults());
         } else {
-            Arrays.sort(getPlayers(), (Player p1, Player p2) -> Integer.compare(p2.getPoints(), p1.getPoints()));
+            System.out.println(multiPlayerFinalResults());
+        }
+    }
 
-            int scoreboardIndex = 1;
-            for (Player player : getPlayers()) {
-                System.out.println(scoreboardIndex + ". " + player.getName() + ": "
-                        + player.getPoints() + " points");
-                scoreboardIndex++;
-            }
+    private String singlePlayerFinalResults() {
+        Player winner;
+        Player player = getPlayers()[0];
+        System.out.println(String.format("\n" + messages.SCOREBOARD_ROW, player.getName(), player.getPoints()));
+        if (dealer.getPoints() > getPlayers()[0].getPoints()) {
+            winner = dealer;
+        } else {
+            winner = player;
+        }
+        return String.format(messages.BLACKJACK_WINNER, winner.getName().toUpperCase());
+    }
 
-            winner = getPlayers()[0];
+    private String multiPlayerFinalResults() {
+        Arrays.sort(getPlayers(), (Player p1, Player p2) -> Integer.compare(p2.getPoints(), p1.getPoints()));
+        displayFinalScoreboard();
+        Player winner = getPlayers()[0];
 
-            if (winner.getPoints() == getPlayers()[1].getPoints() && dealer.getPoints() <= winner.getPoints()) {
-                StringBuilder winners = new StringBuilder("\nTIED GAME!!! THE WINNERS ARE:");
-                for (Player player : getPlayers()) {
-                    if (player.getPoints() == winner.getPoints()) {
-                        winners.append("\n- ").append(player.getName()).append("!!!");
-                    } else {
-                        break;
-                    }
-                }
-                verdict = winners.toString();
+        if (winner.getPoints() == getPlayers()[1].getPoints() && dealer.getPoints() <= winner.getPoints()) {
+            return displayWinnersInTiedGame(winner.getPoints()).toString();
+        } else {
+            if (dealer.getPoints() > getPlayers()[0].getPoints()) winner = dealer;
+            return String.format(messages.BLACKJACK_WINNER, winner.getName().toUpperCase());
+        }
+    }
+
+    private void displayFinalScoreboard() {
+        int scoreboardIndex = 1;
+        for (Player player : getPlayers()) {
+            String scoreboardEntry = String.format(messages.SCOREBOARD_ROW, player.getName(), player.getPoints());
+            System.out.println(scoreboardIndex + ". " + scoreboardEntry);
+            scoreboardIndex++;
+        }
+    }
+
+    private StringBuilder displayWinnersInTiedGame(int winningPoints) {
+        StringBuilder winners = new StringBuilder("\nTIED GAME!!! THE WINNERS ARE:");
+        for (Player player : getPlayers()) {
+            if (player.getPoints() == winningPoints) {
+                winners.append("\n- ").append(player.getName()).append("!!!");
             } else {
-                if (dealer.getPoints() > getPlayers()[0].getPoints()) {
-                    winner = dealer;
-                }
-                verdict = "\nWINNER: " + winner.getName().toUpperCase() + "!!!";
+                break;
             }
         }
+        return winners;
+    }
 
-        System.out.println("\nDealers points: " + dealer.getPoints());
-        System.out.println(verdict);
+    private void checkStatus(GameStatus gameStatus) throws GameFlowException {
+        if (!getGameStatus().equals(gameStatus)) {
+            throw new GameFlowException("Can't continue the game, because status is " + gameStatus);
+        }
     }
 }

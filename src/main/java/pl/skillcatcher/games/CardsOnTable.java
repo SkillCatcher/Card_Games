@@ -42,7 +42,8 @@ public abstract class CardsOnTable {
 
     abstract public boolean canBePlayed(Hand hand, Card card, Player currentPlayer);
 
-    public void displayCards() {
+    public void displayCards(String message) {
+        System.out.println(message);
         for (int i = 0; i < 4; i++) {
             if (getCard(i) == null) {
                 System.out.println((i+1) + ". ---");

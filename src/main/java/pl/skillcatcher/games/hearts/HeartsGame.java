@@ -3,16 +3,16 @@ package pl.skillcatcher.games.hearts;
 import pl.skillcatcher.features.*;
 import pl.skillcatcher.databases.HeartsDB;
 import pl.skillcatcher.exceptions.GameFlowException;
+import pl.skillcatcher.games.ConsoleMessages;
 import pl.skillcatcher.games.Game;
 import pl.skillcatcher.games.GameStatus;
 import pl.skillcatcher.interfaces.PlayersCreator;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 public class HeartsGame extends Game implements PlayersCreator {
+    private ConsoleMessages messages = new ConsoleMessages();
     private HeartsDB db;
     private HeartsTable heartsTable;
     private CardPassing cardPassing;
@@ -79,8 +79,7 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void setUpGame() throws GameFlowException {
-        checkStatus(GameStatus.BEFORE_SETUP);
-
+        checkGameStatus(GameStatus.BEFORE_SETUP);
         setCurrentRound(getCurrentRound() + 1);
         getDeck().setAllCardValues(0);
         getDeck().setCardValuesByColor(CardColour.HEARTS, 1);
@@ -91,7 +90,6 @@ public class HeartsGame extends Game implements PlayersCreator {
         }
 
         cardPassing = new CardPassing(getPlayers(), getCurrentRound());
-
         dealCards();
         setGameStatus(GameStatus.AFTER_SETUP);
     }
@@ -108,7 +106,7 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void startTheGame() throws GameFlowException {
-        checkStatus(GameStatus.AFTER_SETUP);
+        checkGameStatus(GameStatus.AFTER_SETUP);
 
         if (cardPassing.getGameRotation() != 0) {
             cardPassing.cardPass();
@@ -136,51 +134,44 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void currentSituation(Player player) throws GameFlowException {
-        checkStatus(GameStatus.PLAYER_READY);
-
-        System.out.println(player.getName().toUpperCase() + " - IT'S YOUR TURN"
-                + "\nOther players - no peeking :)\n");
+        checkGameStatus(GameStatus.PLAYER_READY);
+        System.out.println(String.format(messages.TURN_START, player.getName().toUpperCase()));
         getUserInteraction().confirm();
 
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
-            System.out.println("Cards in the game so far:");
-            heartsTable.displayCards();
+            heartsTable.displayCards(messages.HEARTS_CARDS_ON_TABLE);
             getUserInteraction().confirm();
-            System.out.println(player.getName() + " - your hand:");
-            player.getHand().displayHand();
+            player.getHand().displayHand(player.getName() + " - " + messages.YOUR_HAND);
         }
-
         setGameStatus(GameStatus.PLAYER_MOVING);
     }
 
     @Override
     public void makeMove(Player player) throws GameFlowException {
         checkPlayerStatus(PlayerStatus.USER, player);
-        checkStatus(GameStatus.PLAYER_MOVING);
+        checkGameStatus(GameStatus.PLAYER_MOVING);
 
         int choice = getUserInteraction()
-                .intInputWithCheck("Pick a card: ", 1, player.getHand().getCards().size());
+                .intInputWithCheck(messages.CARD_PICK, 1, player.getHand().getCards().size());
 
         while (!heartsTable.canBePlayed(player.getHand(), player.getCard(choice-1), getCurrentPlayer())) {
-            System.out.println("Sorry - you can't play that card, because:");
+            System.out.println(messages.CARD_PICK_FAIL);
+
             if (!heartsTable.canBePlayed_ColourRule(player.getHand(), player.getCard(choice-1),
                     getCurrentPlayer())) {
-                System.out.println("- card's colour doesn't match with color of the first card");
+                System.out.println(messages.CARD_PICK_FAIL_COLOR_RULE);
             }
 
             if (!heartsTable.canBePlayed_HeartsRule(player.getHand(), player.getHand().getACard(choice-1))) {
-                System.out.println("- hearts still aren't allowed");
+                System.out.println(messages.HEARTS_ALLOWED_RULE);
             }
 
             if (!heartsTable.canBePlayed_FirstRoundRule(player.getHand(), player.getHand().getACard(choice-1))) {
-                System.out.println("- it's first deal: "
-                        + "\n\ta) it has to start with Two of Clubs"
-                        + "\n\tb) cards with points are not allowed");
+                System.out.println(messages.HEARTS_FIRST_DEAL_RULE);
             }
 
-            System.out.println("\nPlease choose again...");
-            getUserInteraction().confirm();
-            choice = getUserInteraction().intInputWithCheck("Pick a card: ", 1,
+            System.out.println(messages.NEW_CHOICE);
+            choice = getUserInteraction().intInputWithCheck(messages.CARD_PICK, 1,
                     player.getHand().getCards().size());
         }
 
@@ -191,26 +182,24 @@ public class HeartsGame extends Game implements PlayersCreator {
     @Override
     public void virtualPlayerMove(Player playerAI) throws GameFlowException {
         checkPlayerStatus(PlayerStatus.AI, playerAI);
-        checkStatus(GameStatus.PLAYER_MOVING);
-
+        checkGameStatus(GameStatus.PLAYER_MOVING);
         vpd.setVirtualPlayer(playerAI);
         vpd.setCardsOnTable(heartsTable);
         vpd.filterPlayableCards(getCurrentPlayer());
         vpd.chooseCardToPlay();
-
         setGameStatus(GameStatus.PLAYER_READY);
     }
 
     public void moveResult() throws GameFlowException {
-        checkStatus(GameStatus.ALL_PLAYERS_DONE);
+        checkGameStatus(GameStatus.ALL_PLAYERS_DONE);
+        System.out.println(messages.END_OF_DEAL);
+        getUserInteraction().confirm();
 
-        System.out.println("\nEnd of deal");
-        getUserInteraction().confirm();
-        System.out.println("\nCards in game:");
-        heartsTable.displayCards();
+        heartsTable.displayCards(messages.CARDS_IN_GAME);
         Player winner = heartsTable.getWinner(getPlayers(), getCurrentPlayer());
-        System.out.println("This pool goes to " + winner.getName().toUpperCase());
+        System.out.println(String.format(messages.POOL_WINNER, winner.getName().toUpperCase()));
         getUserInteraction().confirm();
+
         heartsTable.checkForEnablingHearts();
         winner.getHand().collectCards(heartsTable);
         setCurrentPlayer(winner);
@@ -223,26 +212,18 @@ public class HeartsGame extends Game implements PlayersCreator {
     }
 
     private void updatePoints() {
-        if (has_26_Points() != null) {
-            for (Player player : getPlayers()) {
-                if (!player.equals(has_26_Points())) {
-                    player.addPoints(26);
-                }
-            }
-        } else {
-            for (Player player : getPlayers()) {
-                for (Card card : player.getCollectedCards()) player.addPoints(card.getValue());
+        for (Player player : getPlayers()) {
+            if (has_26_Points() == null) {
+                player.addPoints(collectedPoints(player));
+            } else if (!player.equals(has_26_Points())) {
+                player.addPoints(26);
             }
         }
     }
 
     private Player has_26_Points() {
         for (Player player : getPlayers()) {
-            int sum = 0;
-            for (Card card : player.getCollectedCards()) {
-                sum += card.getValue();
-            }
-
+            int sum = collectedPoints(player);
             if (sum == 26) {
                 return player;
             } else if (sum > 0) {
@@ -252,19 +233,25 @@ public class HeartsGame extends Game implements PlayersCreator {
         return null;
     }
 
+    private int collectedPoints(Player player) {
+        int sum = 0;
+        for (Card card : player.getCollectedCards()) {
+            sum += card.getValue();
+        }
+        return sum;
+    }
+
     @Override
     public void printResults() throws GameFlowException {
-        checkStatus(GameStatus.ROUND_DONE);
-
+        checkGameStatus(GameStatus.ROUND_DONE);
         updatePoints();
-        boolean endGame = Arrays.stream(getPlayers()).anyMatch(player -> player.getPoints() >= 100);
+        System.out.println(messages.SCOREBOARD);
 
-        System.out.println("Scoreboard");
         db.saveCurrentRoundToTheTable(getCurrentRound(), getPlayers());
         db.displayTable();
-
         getUserInteraction().confirm();
-        if (endGame) {
+
+        if (Arrays.stream(getPlayers()).anyMatch(player -> player.getPoints() >= 100)) {
             setGameStatus(GameStatus.GAME_DONE);
         } else {
             resetGameSettings();
@@ -274,16 +261,16 @@ public class HeartsGame extends Game implements PlayersCreator {
 
     @Override
     public void printFinalScore() throws GameFlowException {
-        checkStatus(GameStatus.GAME_DONE);
-
+        checkGameStatus(GameStatus.GAME_DONE);
         sortPlayersByPoints();
         Player winner = getPlayers()[0];
         int i = 0;
         for (Player player : getPlayers()) {
-            System.out.println((i+1) + ". " + player.getName() + ": " + player.getPoints() + " points");
+            System.out.println(String.format(
+                    messages.SCOREBOARD_ROW_WITH_NUM, (i+1), player.getName(), player.getPoints()));
             i++;
         }
-        System.out.println("\nWinner - " + winner.getName());
+        System.out.println(String.format(messages.SCOREBOARD_LEADER, winner.getName()));
     }
 
     private void sortPlayersByPoints() {
@@ -304,7 +291,7 @@ public class HeartsGame extends Game implements PlayersCreator {
         }
     }
 
-    private void checkStatus(GameStatus gameStatus) throws GameFlowException {
+    private void checkGameStatus(GameStatus gameStatus) throws GameFlowException {
         if (!getGameStatus().equals(gameStatus)) {
             throw new GameFlowException("Can't continue the game");
         }

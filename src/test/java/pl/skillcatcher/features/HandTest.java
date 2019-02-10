@@ -64,7 +64,7 @@ public class HandTest {
         Deck deck = new Deck(6, 18);
         hand.setCards(deck.getCards());
 
-        hand.displayHand();
+        hand.displayHand("");
 
         assertEquals("1. Four of Clubs\n" +
                 "2. Five of Clubs\n" +
@@ -89,7 +89,7 @@ public class HandTest {
         Deck deck = new Deck(6, 18);
         hand.setCards(deck.getCards());
 
-        hand.displayHand();
+        hand.displayHand("");
 
         for (int i = 0; i < controlIntGroup.length; i++) {
             new CardsAssert(hand.getACard(i)).isThisTheSameCard(new Card(controlIntGroup[i]));

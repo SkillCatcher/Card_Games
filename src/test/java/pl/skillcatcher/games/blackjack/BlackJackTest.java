@@ -38,16 +38,30 @@ public class BlackJackTest { //TODO: REPAIR THE TESTS LIKE HEARTS
 
 
     @Test
-    public void should_Create_Blackjack_Game() {
+    public void should_Create_Blackjack_Game_With_Correct_Number_Of_Human_Players() {
         assertEquals(3, testBlackJack.getNumberOfHumanPlayers());
+    }
+
+    @Test
+    public void should_Create_Blackjack_Game_With_Correct_Number_Of_Rounds_To_Play() {
         assertEquals(5, testBlackJack.getRoundsToPlay());
-        assertEquals(testNames.length, testBlackJack.getPlayers().length);
-        Assert.assertEquals(GameStatus.BEFORE_SETUP, testBlackJack.getGameStatus());
+    }
+
+    @Test
+    public void should_Create_Blackjack_Game_With_Correct_Game_Status() {
+        assertEquals(GameStatus.BEFORE_SETUP, testBlackJack.getGameStatus());
+    }
+
+    @Test
+    public void should_Create_Blackjack_Game_With_Dealer() {
         new PlayerAssert(testBlackJack.getDealer()).isTheSamePlayer(testDealer);
+    }
+
+    @Test
+    public void should_Create_Blackjack_Game_With_Correct_Player_Names() {
         for (int i = 0; i < testNames.length; i++) {
             assertEquals(testNames[i], testBlackJack.getPlayers()[i].getName());
         }
-
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
@@ -56,10 +70,33 @@ public class BlackJackTest { //TODO: REPAIR THE TESTS LIKE HEARTS
     }
 
     @Test
-    public void should_Deal_Cards() {
+    public void dealCards___Should_Remove_Correct_Number_Of_Cards_From_Deck() {
         testBlackJack.dealCards();
-        cardDealTestResult();
+        assertEquals(44, testBlackJack.getDeck().getCards().size());
     }
+
+    @Test
+    public void dealCards___Should_Deal_Correct_Number_Of_Cards_To_Dealer() {
+        testBlackJack.dealCards();
+        assertEquals(2, testBlackJack.getDealer().getCards().size());
+    }
+
+    @Test
+    public void dealCards___Should_Deal_Correct_Number_Of_Cards_To_Players() {
+        testBlackJack.dealCards();
+        for (Player player : testBlackJack.getPlayers()) {
+            assertEquals(2, player.getCards().size());
+        }
+    }
+
+
+
+
+//TODO: REPAIR THE TESTS LIKE HEARTS
+
+
+
+
 
     @Test
     public void should_Correctly_Set_Up_First_Game() throws GameFlowException {
@@ -72,7 +109,6 @@ public class BlackJackTest { //TODO: REPAIR THE TESTS LIKE HEARTS
             verify(mockedDB, times(1)).setUpNewTable();
         }
         assertEquals(1, testBlackJack.getCurrentRound());
-        cardDealTestResult();
 
         int currentPlayerIndex = testBlackJack.getRoundsToPlay() % testBlackJack.getNumberOfHumanPlayers();
         new PlayerAssert(testBlackJack.getCurrentPlayer())
@@ -93,7 +129,6 @@ public class BlackJackTest { //TODO: REPAIR THE TESTS LIKE HEARTS
 
         cardSetValuesResult();
         assertEquals(roundNumber+1, testBlackJack.getCurrentRound());
-        cardDealTestResult();
 
         int currentPlayerIndex = testBlackJack.getRoundsToPlay() % testBlackJack.getNumberOfHumanPlayers();
         new PlayerAssert(testBlackJack.getCurrentPlayer())
@@ -503,14 +538,6 @@ public class BlackJackTest { //TODO: REPAIR THE TESTS LIKE HEARTS
         System.setOut(originalOut);
     }
 
-    private void cardDealTestResult() {
-        assertEquals(44, testBlackJack.getDeck().getCards().size());
-        assertEquals(2, testBlackJack.getDealer().getCards().size());
-        for (Player player : testBlackJack.getPlayers()) {
-            assertEquals(2, player.getCards().size());
-        }
-    }
-
     private void cardSetValuesResult() {
         for (Card card : testBlackJack.getDeck().getCards()) {
             if (card.getNumber().equals(CardNumber.ACE)) {
@@ -532,9 +559,9 @@ public class BlackJackTest { //TODO: REPAIR THE TESTS LIKE HEARTS
 
     private void currentSituationCommonAsserts() {
         verify(mockedUA, times(1)).confirm();
-        verify(testBlackJack.getPlayers()[1].getHand(), times(1)).displayHand();
+        verify(testBlackJack.getPlayers()[1].getHand(), times(1)).displayHand(anyString());
         verify(testBlackJack.getPlayers()[1].getHand(), times(1)).displayPoints();
-        verify(testBlackJack.getPlayers()[2].getHand(), times(1)).displayHand();
+        verify(testBlackJack.getPlayers()[2].getHand(), times(1)).displayHand(anyString());
         verify(testBlackJack.getPlayers()[2].getHand(), times(1)).displayPoints();
     }
 

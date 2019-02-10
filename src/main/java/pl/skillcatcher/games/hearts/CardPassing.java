@@ -4,10 +4,12 @@ import pl.skillcatcher.features.Card;
 import pl.skillcatcher.features.Player;
 import pl.skillcatcher.features.PlayerStatus;
 import pl.skillcatcher.features.UserInteraction;
+import pl.skillcatcher.games.ConsoleMessages;
 
 import java.util.ArrayList;
 
 public class CardPassing {
+    private ConsoleMessages messages = new ConsoleMessages();
     private UserInteraction userInteraction;
     private ArrayList<ArrayList<Card>> cardTrios;
     private Player[] players;
@@ -69,29 +71,22 @@ public class CardPassing {
     }
 
     private void cardPassTurn(Player player) {
-        System.out.println("Card Pass Turn for player: " + player.getName());
+        System.out.println(String.format(messages.HEARTS_PASSING_START, player.getName()));
         userInteraction.confirm();
 
         if (player.getPlayerStatus().equals(PlayerStatus.USER)) {
-            System.out.println("Your hand:");
-            player.getHand().displayHand();
-
-            System.out.println("Choose 3 cards from the list by their number (if you want to reverse the pick, " +
-                    "simply pick the same card again). They'll be passed to "
-                    + getPlayers()[( player.getId() + gameRotation() ) % 4].getName() + ": \n");
+            player.getHand().displayHand(messages.YOUR_HAND);
+            String receivingPlayer = getPlayers()[( player.getId() + gameRotation() ) % 4].getName();
+            System.out.println(String.format(messages.HEARTS_CHOOSE_3_CARDS, receivingPlayer));
 
             cardPassChoice(player, cardTrios.get(player.getId()));
-
             printCardChoices(cardTrios.get(player.getId()));
-
             userInteraction.confirm();
 
             for (Card card : cardTrios.get(player.getId())) {
                 player.getCards().remove(card);
             }
-
         } else {
-
             for (int a = 0; a < 3; a++) {
                 Card card = player.getCard(
                         (int)Math.floor(Math.random()*player.getCards().size()));
@@ -102,7 +97,7 @@ public class CardPassing {
     }
 
     private void printCardChoices(ArrayList<Card> cardTrio) {
-        System.out.println("You've chosen: ");
+        System.out.println(messages.HEARTS_3_CHOSEN_CARDS);
         for (Card card : cardTrio) System.out.println(card.getName());
     }
 
@@ -113,39 +108,40 @@ public class CardPassing {
     }
 
     private void cardPassChoice(Player player, ArrayList<Card> cardTrio) {
-        final int numberOfCardsToPass = 3;
-        int numberOfCardsChosen = 0;
+        while (cardTrio.size() < 3) {
+            partialChoiceSummary(cardTrio);
+            String singleChoiceRequest = String.format(messages.HEARTS_CHOOSE_A_CARD, cardTrio.size()+1);
+            int choice = userInteraction.intInputWithCheck(singleChoiceRequest, 1, 13);
 
-        while (numberOfCardsChosen < numberOfCardsToPass) {
-            boolean cardPickedFirstTime = true;
-
-            if (numberOfCardsChosen > 0) {
-                System.out.println("Your choices so far...");
-                for (int i = 0; i < numberOfCardsChosen; i++) {
-                    System.out.println((i+1) + ". " + cardTrio.get(i).getName());
-                }
-            }
-
-            int choice = userInteraction.intInputWithCheck("Choose card number " +
-                            (numberOfCardsChosen+1) + ":", 1, 13);
-
-            for (int i = 0; i < numberOfCardsChosen; i++) {
-                if (cardTrio.get(i).equals(player.getCard(choice-1))) {
-                    cardPickedFirstTime = false;
-                    break;
-                }
-            }
-
-            if (cardPickedFirstTime) {
+            if (!isCardPickedAgain(player, cardTrio, choice-1)) {
                 cardTrio.add(player.getCard(choice - 1));
-                numberOfCardsChosen++;
             } else {
-                System.out.println("Choice of " + player.getCard(choice-1).getName()
-                        + " was cancelled.");
-                cardTrio.remove(player.getCard(choice-1));
-                numberOfCardsChosen--;
+                cardChoiceCancellation(player, choice-1, cardTrio);
             }
         }
+    }
+
+    private void partialChoiceSummary(ArrayList<Card> cardTrio) {
+        if (cardTrio.size() > 0) {
+            System.out.println(messages.HEARTS_PARTIAL_CHOICE);
+            for (int i = 0; i < cardTrio.size(); i++) {
+                System.out.println((i+1) + ". " + cardTrio.get(i).getName());
+            }
+        }
+    }
+
+    private boolean isCardPickedAgain(Player player, ArrayList<Card> cardTrio, int cardID) {
+        for (int i = 0; i < cardTrio.size(); i++) {
+            if (cardTrio.get(i).equals(player.getCard(cardID))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void cardChoiceCancellation(Player player, int cardID, ArrayList<Card> cardTrio) {
+        System.out.println(String.format(messages.HEARTS_CHOICE_CANCELLED, player.getCard(cardID).getName()));
+        cardTrio.remove(player.getCard(cardID));
     }
 
     public void cardPass() {

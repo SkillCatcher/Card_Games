@@ -102,7 +102,7 @@ public class HG_CurrentSituation_TestParameterized {
 
         testHeartsGame.currentSituation(movingPlayer);
 
-        verify(mockedHT, times(displayCardsInvocations)).displayCards();
+        verify(mockedHT, times(displayCardsInvocations)).displayCards("");
     }
 
     @Test
